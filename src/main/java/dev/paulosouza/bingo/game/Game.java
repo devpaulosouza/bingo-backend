@@ -5,10 +5,9 @@ import dev.paulosouza.bingo.dto.response.BingoResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.utils.GameUtils;
+import dev.paulosouza.bingo.utils.ListUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Game {
 
@@ -18,11 +17,9 @@ public class Game {
 
     private final List<Card> cards = new ArrayList<>();
 
-    private final List<Integer> possibleNumbers = this.buildList(1, 75);
+    private final List<Integer> possibleNumbers = ListUtils.buildList(1, 75);
 
     private final List<Integer> drawnNumbers = new ArrayList<>();
-
-    private final Random random = new Random();
 
     public Card join(Player player) {
         this.validateJoin();
@@ -33,7 +30,7 @@ public class Game {
                 .build();
 
         do {
-            card.setNumbers(this.drawCardNumbers());
+            card.setNumbers(GameUtils.drawCardNumbers());
         } while (this.cardAlreadyExists(card));
 
         this.cards.add(card);
@@ -54,9 +51,7 @@ public class Game {
         card.getMarkedNumbers()[request.getI()][request.getJ()] = request.isMarked();
 
         if (GameUtils.checkWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)) {
-            this.isGameRunning = false;
             response.setWinner(true);
-            this.notifyWinner(card.getPlayer());
         }
 
         return response;
@@ -68,7 +63,7 @@ public class Game {
     }
 
     public void drawNumber() {
-        int number = this.chooseNumber(this.possibleNumbers);
+        int number = ListUtils.chooseNumber(this.possibleNumbers);
         this.drawnNumbers.add(number);
         this.notifyNumber(number);
     }
@@ -137,47 +132,6 @@ public class Game {
         }
     }
 
-    private int[][] drawCardNumbers() {
-        int[][] cardNumbers = new int[5][5];
-
-        List<Integer> possibleB = this.buildList(1, 15);
-        List<Integer> possibleI = this.buildList(16, 30);
-        List<Integer> possibleN = this.buildList(31, 45);
-        List<Integer> possibleG = this.buildList(46, 60);
-        List<Integer> possibleO = this.buildList(61, 75);
-
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                switch (j) {
-                    case 0 -> cardNumbers[i][j] = this.chooseNumber(possibleB);
-                    case 1 -> cardNumbers[i][j] = this.chooseNumber(possibleI);
-                    case 2 -> {
-                        if (i == 2) {
-                            cardNumbers[i][j] = -1;
-                        } else {
-                            cardNumbers[i][j] = this.chooseNumber(possibleN);
-                        }
-                    }
-                    case 3 -> cardNumbers[i][j] = this.chooseNumber(possibleG);
-                    case 4 -> cardNumbers[i][j] = this.chooseNumber(possibleO);
-                    default -> throw new UnprocessableEntityException("Unexpected range");
-                }
-            }
-        }
-
-        return cardNumbers;
-    }
-
-    @SuppressWarnings("java:S6204")
-    private List<Integer> buildList(int startInclusive, int endInclusive) {
-        return IntStream.rangeClosed(startInclusive, endInclusive)
-                .boxed()
-                .collect(Collectors.toList());
-    }
-
-    private int chooseNumber(List<Integer> possibleNumbers) {
-        return possibleNumbers.remove(this.random.nextInt(possibleNumbers.size()));
-    }
 
     private boolean cardAlreadyExists(Card card) {
         return this.cards.stream()

@@ -138,6 +138,47 @@ class GameUtilsTest {
         Assertions.assertFalse(col0);
     }
 
+    @Test
+    void noneMatchCol() {
+        // given
+
+        // when
+        boolean col0 = GameUtils.checkWinner(this.buildMarkedCol(0), VALID_NUMBERS, List.of(3, 2, 1, 6, 4));
+
+        // then
+        Assertions.assertFalse(col0);
+    }
+
+    @Test
+    void noneMatchRow() {
+        // given
+
+        // when
+        boolean col0 = GameUtils.checkWinner(this.buildMarkedRow(2), VALID_NUMBERS, List.of(1, 31, 16, 46, 62));
+
+        // then
+        Assertions.assertFalse(col0);
+    }
+
+    @Test
+    void drawCardNumbers() {
+        // given
+
+        // when
+        int[][] cardNumbers = GameUtils.drawCardNumbers();
+
+        // then
+        for (int i = 0; i < cardNumbers.length; i++) {
+            for (int j = 0; j < cardNumbers[i].length; j++) {
+                if (i == 2 && j == 2) {
+                    continue;
+                }
+                Assertions.assertTrue(cardNumbers[j][i] > (15 * i));
+                Assertions.assertTrue(cardNumbers[j][i] <= (15 * i ) + 15);
+            }
+        }
+    }
+
     private boolean[][] buildMarkedCol(int col) {
         boolean[][] markedNumbers = new boolean[5][5];
 
