@@ -6,9 +6,17 @@ import dev.paulosouza.bingo.dto.response.MarkResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class Game {
 
     private boolean isAcceptingNewPlayers = true;
@@ -20,6 +28,8 @@ public class Game {
     private final List<Integer> possibleNumbers = ListUtils.buildList(1, 75);
 
     private final List<Integer> drawnNumbers = new ArrayList<>();
+
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     public Card join(Player player) {
         this.validateJoin();
@@ -60,12 +70,8 @@ public class Game {
     public void startGame() {
         this.isAcceptingNewPlayers = false;
         this.isGameRunning = true;
-    }
 
-    public void drawNumber() {
-        int number = ListUtils.chooseNumber(this.possibleNumbers);
-        this.drawnNumbers.add(number);
-        this.notifyNumber(number);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.SECONDS);
     }
 
     public BingoResponse bingo(UUID playerId) {
@@ -84,6 +90,19 @@ public class Game {
         return BingoResponse.builder()
                 .winner(isWinner)
                 .build();
+    }
+
+    private void drawNumber() {
+        if (possibleNumbers.isEmpty()) {
+            this.scheduledExecutorService.shutdown();
+            throw new UnprocessableEntityException("No more numbers to draw");
+        }
+
+        int number = ListUtils.chooseNumber(this.possibleNumbers);
+        this.drawnNumbers.add(number);
+        this.notifyNumber(number);
+
+        log.info("drawn number = {}", number);
     }
 
     private void notifyWinner(Player player) {
@@ -113,7 +132,7 @@ public class Game {
     }
 
     private boolean isPositionIsValid(MarkRequest request) {
-        return request.getI() != 2 && request.getJ() != 2;
+        return !(request.getI() == 2 && request.getJ() == 2);
     }
 
     private void validateJoin() {
