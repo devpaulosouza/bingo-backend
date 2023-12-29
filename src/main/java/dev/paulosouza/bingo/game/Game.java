@@ -23,13 +23,15 @@ public class Game {
 
     private boolean isGameRunning = false;
 
+    private boolean needsRestart = false;
+
     private final List<Card> cards = new ArrayList<>();
 
-    private final List<Integer> possibleNumbers = ListUtils.buildList(1, 75);
+    private List<Integer> possibleNumbers;
 
     private final List<Integer> drawnNumbers = new ArrayList<>();
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService scheduledExecutorService;
 
     public Card join(Player player) {
         this.validateJoin();
@@ -70,8 +72,12 @@ public class Game {
     public void startGame() {
         this.isAcceptingNewPlayers = false;
         this.isGameRunning = true;
+        this.possibleNumbers = ListUtils.buildList(1, 75);
+        this.drawnNumbers.clear();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.SECONDS);
+        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.MILLISECONDS);
     }
 
     public BingoResponse bingo(UUID playerId) {
@@ -90,6 +96,12 @@ public class Game {
         return BingoResponse.builder()
                 .winner(isWinner)
                 .build();
+    }
+
+    public void clean() {
+        this.cards.clear();
+        this.isAcceptingNewPlayers = true;
+        this.isGameRunning = false;
     }
 
     private void drawNumber() {

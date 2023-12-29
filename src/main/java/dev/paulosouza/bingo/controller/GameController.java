@@ -29,6 +29,13 @@ public class GameController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("clean")
+    public ResponseEntity<Void> clean() {
+        GameSingleton.getInstance().clean();
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("mark")
     public ResponseEntity<MarkResponse> mark(@RequestBody MarkRequest request) {
         MarkResponse response = GameSingleton.getInstance().mark(request);

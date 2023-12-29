@@ -12,11 +12,12 @@ public class GameUtils {
 
     @SuppressWarnings("java:S3776")
     public static boolean checkWinner(boolean[][] markedNumbers, int[][] numbers, List<Integer> drawnNumbers) {
+        boolean wonByMainDiagonal = true;
+        boolean wonBySecondaryDiagonal = true;
+
         for (int i = 0; i < markedNumbers.length; i++) {
             boolean wonByRow = true;
             boolean wonByCol = true;
-            boolean wonByMainDiagonal = true;
-            boolean wonBySecondaryDiagonal = true;
 
             for (int j = 0; j < markedNumbers[0].length; j++) {
 
