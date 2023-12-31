@@ -3,10 +3,16 @@ package dev.paulosouza.bingo.game;
 import dev.paulosouza.bingo.dto.request.MarkRequest;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
+import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
+import dev.paulosouza.bingo.socket.WebSocket;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
+import dev.paulosouza.bingo.utils.SseUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,13 +23,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class Game {
+@Service
+@RequiredArgsConstructor
+public class GameService {
 
     private boolean isAcceptingNewPlayers = true;
 
     private boolean isGameRunning = false;
-
-    private boolean needsRestart = false;
 
     private final List<Card> cards = new ArrayList<>();
 
@@ -32,6 +38,8 @@ public class Game {
     private final List<Integer> drawnNumbers = new ArrayList<>();
 
     private ScheduledExecutorService scheduledExecutorService;
+
+    private final WebSocket webSocket;
 
     public Card join(Player player) {
         this.validateJoin();
@@ -77,7 +85,9 @@ public class Game {
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.MILLISECONDS);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.SECONDS);
+
+        SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards));
     }
 
     public BingoResponse bingo(UUID playerId) {
@@ -91,6 +101,7 @@ public class Game {
         if (isWinner) {
             this.notifyWinner(card.getPlayer());
             this.isGameRunning = false;
+            this.scheduledExecutorService.shutdown();
         }
 
         return BingoResponse.builder()
@@ -102,6 +113,16 @@ public class Game {
         this.cards.clear();
         this.isAcceptingNewPlayers = true;
         this.isGameRunning = false;
+    }
+
+    public void addListener(UUID playerId, SseEmitter emitter) {
+        Player player = this.cards.stream()
+                .filter(card -> card.getPlayer().getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"))
+                .getPlayer();
+
+        player.setEmitter(emitter);
     }
 
     private void drawNumber() {
@@ -118,11 +139,14 @@ public class Game {
     }
 
     private void notifyWinner(Player player) {
-
+        SseUtils.broadcastWinner(SseUtils.mapEmitters(this.cards), player);
     }
 
     private void notifyNumber(int number) {
-
+        SseUtils.broadcastDrawnNumberMessage(
+                SseUtils.mapEmitters(this.cards),
+                new DrawnNumberResponse(number, this.drawnNumbers)
+        );
     }
 
     private void validateMark(MarkRequest request) {
@@ -173,4 +197,5 @@ public class Game {
     private boolean cardIsEquals(List<Integer> playerNumbers, List<Integer> otherPlayerNumbers) {
         return new HashSet<>(otherPlayerNumbers).containsAll(playerNumbers);
     }
+
 }

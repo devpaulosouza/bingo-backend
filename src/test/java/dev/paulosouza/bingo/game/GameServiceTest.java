@@ -9,17 +9,17 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class GameTest {
+class GameServiceTest {
 
     @InjectMocks
-    private Game game;
+    private GameService gameService;
 
     @Test
     void join() {
         // given
 
         // when
-        Card card = this.game.join(new Player());
+        Card card = this.gameService.join(new Player());
 
         // then
         Assertions.assertNotNull(card);
@@ -33,8 +33,8 @@ class GameTest {
     @Test
     void mark() {
         // given
-        Card card = this.game.join(new Player());
-        this.game.startGame();
+        Card card = this.gameService.join(new Player());
+        this.gameService.startGame();
 
         MarkRequest request = new MarkRequest();
 
@@ -44,7 +44,7 @@ class GameTest {
         request.setPlayerId(card.getPlayer().getId());
 
         // when
-        MarkResponse response = this.game.mark(request);
+        MarkResponse response = this.gameService.mark(request);
 
         // then
         Assertions.assertNotNull(response);
