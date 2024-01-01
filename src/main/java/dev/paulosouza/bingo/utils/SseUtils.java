@@ -1,16 +1,13 @@
 package dev.paulosouza.bingo.utils;
 
-import dev.paulosouza.bingo.dto.response.sse.CleanResponse;
-import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
-import dev.paulosouza.bingo.dto.response.sse.StartedResponse;
-import dev.paulosouza.bingo.dto.response.sse.WinnerResponse;
+import dev.paulosouza.bingo.dto.response.sse.*;
 import dev.paulosouza.bingo.game.Card;
 import dev.paulosouza.bingo.game.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Slf4j
 public class SseUtils {
@@ -19,11 +16,14 @@ public class SseUtils {
 
     }
 
-    public static List<SseEmitter> mapEmitters(List<Card> cards) {
-        return cards
-                .stream()
-                .map(Card::getPlayer)
-                .map(Player::getEmitter)
+    public static List<SseEmitter> mapEmitters(List<Card> cards, List<SseEmitter> admins) {
+        return Stream.concat(
+                        cards
+                                .stream()
+                                .map(Card::getPlayer)
+                                .map(Player::getEmitter),
+                        admins.stream()
+                )
                 .toList();
     }
 
@@ -43,10 +43,18 @@ public class SseUtils {
         emitters.forEach(SseUtils::sendCleanMessage);
     }
 
+    public static void broadcastMarked(List<SseEmitter> emitters, MarkedResponse markedResponse) {
+        emitters.forEach(emitter -> SseUtils.sendMarkedMessage(emitter, markedResponse));
+    }
+
+    public static void broadcastJoin(List<SseEmitter> emitters, Card card) {
+        emitters.forEach(emitter -> SseUtils.sendJoinMessage(emitter, card));
+    }
+
     private static void sendStartedMessage(SseEmitter emitter) {
         try {
             emitter.send(new StartedResponse(true));
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error sending start message: {}", e.getMessage());
         }
     }
@@ -54,7 +62,7 @@ public class SseUtils {
     private static void sendDrawnNumberMessage(SseEmitter emitter, DrawnNumberResponse response) {
         try {
             emitter.send(response);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error sending drawn number message: {}", e.getMessage());
         }
     }
@@ -62,7 +70,7 @@ public class SseUtils {
     private static void sendWinnerMessage(SseEmitter emitter, Player player) {
         try {
             emitter.send(new WinnerResponse(player.getId(), player.getName()));
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error sending winner message: {}", e.getMessage());
         }
     }
@@ -70,8 +78,24 @@ public class SseUtils {
     private static void sendCleanMessage(SseEmitter emitter) {
         try {
             emitter.send(new CleanResponse());
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Error sending clean message: {}", e.getMessage());
+        }
+    }
+
+    private static void sendMarkedMessage(SseEmitter emitter, MarkedResponse response) {
+        try {
+            emitter.send(response);
+        } catch (Exception e) {
+            log.error("Error sending marked message: {}", e.getMessage());
+        }
+    }
+
+    private static void sendJoinMessage(SseEmitter emitter, Card card) {
+        try {
+            emitter.send(card);
+        } catch (Exception e) {
+            log.error("Error sending join message: {}", e.getMessage());
         }
     }
 

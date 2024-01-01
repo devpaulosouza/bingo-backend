@@ -11,13 +11,13 @@ public class MarkedResponse extends SseEventResponse {
 
     private UUID playerId;
 
-    private short i;
+    private int i;
 
-    private short j;
+    private int j;
 
     private boolean marked;
 
-    public MarkedResponse(UUID playerId, short i, short j, boolean marked) {
+    public MarkedResponse(UUID playerId, int i, int j, boolean marked) {
         super(SseEventType.MARK);
         this.playerId = playerId;
         this.i = i;

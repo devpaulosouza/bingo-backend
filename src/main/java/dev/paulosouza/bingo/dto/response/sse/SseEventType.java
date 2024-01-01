@@ -5,5 +5,5 @@ public enum SseEventType {
     DRAWN_NUMBER,
     CLEAN,
     MARK,
-    WINNER,
+    WINNER, JOIN,
 }

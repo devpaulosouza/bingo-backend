@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.request.MarkRequest;
+import dev.paulosouza.bingo.dto.response.AdminGameResponse;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
 import dev.paulosouza.bingo.dto.response.GameResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
@@ -62,12 +63,21 @@ public class GameController {
 
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/admin")
+    public ResponseEntity<AdminGameResponse> getGame() {
+        AdminGameResponse response = this.gameService.getGame();
+
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping(value="/connect/players/{playerId}")
-    public SseEmitter connect(@PathVariable("playerId") UUID playerId) {
+    public SseEmitter connect(
+            @PathVariable("playerId") UUID playerId,
+            @RequestParam(value = "isAdmin", required = false) boolean isAdmin
+    ) {
         SseEmitter emitter = new SseEmitter(0L);
 
-        this.gameService.addListener(playerId, emitter);
+        this.gameService.addListener(playerId, isAdmin, emitter);
 
         return emitter;
     }
