@@ -43,10 +43,12 @@ public class GameService {
 
     private final List<Integer> drawnNumbers = new ArrayList<>();
 
+    private final List<String> allowList = new ArrayList<>();
+
     private ScheduledExecutorService scheduledExecutorService;
 
     public Card join(Player player) {
-        this.validateJoin();
+        this.validateJoin(player);
 
         Card card = Card.builder()
                 .id(UUID.randomUUID())
@@ -177,6 +179,11 @@ public class GameService {
         }
     }
 
+    public void setAllowList(List<String> usernames) {
+        this.allowList.clear();
+        this.allowList.addAll(usernames);
+    }
+
     private void drawNumber() {
         if (possibleNumbers.isEmpty()) {
             this.scheduledExecutorService.shutdown();
@@ -243,8 +250,15 @@ public class GameService {
         return !(request.getI() == 2 && request.getJ() == 2);
     }
 
-    private void validateJoin() {
+    private void validateJoin(Player player) {
         this.validateAcceptingNewPlayers();
+        this.validateAllowList(player.getUsername());
+    }
+
+    private void validateAllowList(String username) {
+        if (!this.allowList.isEmpty() && !this.allowList.contains(username)) {
+            throw new UnprocessableEntityException("Username is not allowed to play in this session");
+        }
     }
 
     private void validateAcceptingNewPlayers() {

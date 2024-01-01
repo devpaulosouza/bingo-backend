@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -80,6 +81,13 @@ public class GameController {
         this.gameService.addListener(playerId, isAdmin, emitter);
 
         return emitter;
+    }
+
+    @PostMapping("/allow-list")
+    public ResponseEntity<Void> allowList(@RequestBody List<String> usernames) {
+        this.gameService.setAllowList(usernames);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
