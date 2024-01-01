@@ -29,3 +29,6 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+tasks.jar {
+	manifest.attributes["Main-Class"] = "dev.paulosouza.bingo.BingoApplication"
+}
