@@ -31,4 +31,5 @@ tasks.named('test') {
 }
 tasks.jar {
 	manifest.attributes["Main-Class"] = "dev.paulosouza.bingo.BingoApplication"
+	enabled = false
 }
