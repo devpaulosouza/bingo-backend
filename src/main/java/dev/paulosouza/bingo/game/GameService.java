@@ -94,7 +94,7 @@ public class GameService {
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.SECONDS);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
 
         SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards, this.admins));
     }
