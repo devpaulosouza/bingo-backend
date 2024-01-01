@@ -2,6 +2,7 @@ package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.request.MarkRequest;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
+import dev.paulosouza.bingo.dto.response.GameResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
 import dev.paulosouza.bingo.game.Card;
 import dev.paulosouza.bingo.game.GameService;
@@ -51,6 +52,13 @@ public class GameController {
     @PostMapping("/users/{playerId}/bingo")
     public ResponseEntity<BingoResponse> bingo(@PathVariable("playerId") UUID playerId) {
         BingoResponse response = this.gameService.bingo(playerId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/users/{playerId}")
+    public ResponseEntity<GameResponse> getGame(@PathVariable("playerId") UUID playerId) {
+        GameResponse response = this.gameService.getGame(playerId);
 
         return ResponseEntity.ok(response);
     }

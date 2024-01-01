@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.utils;
 
+import dev.paulosouza.bingo.dto.response.sse.CleanResponse;
 import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.dto.response.sse.StartedResponse;
 import dev.paulosouza.bingo.dto.response.sse.WinnerResponse;
@@ -38,6 +39,10 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendWinnerMessage(emitter, player));
     }
 
+    public static void broadcastClean(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendCleanMessage);
+    }
+
     private static void sendStartedMessage(SseEmitter emitter) {
         try {
             emitter.send(new StartedResponse(true));
@@ -61,4 +66,13 @@ public class SseUtils {
             log.error("Error sending winner message: {}", e.getMessage());
         }
     }
+
+    private static void sendCleanMessage(SseEmitter emitter) {
+        try {
+            emitter.send(new CleanResponse());
+        } catch (IOException e) {
+            log.error("Error sending clean message: {}", e.getMessage());
+        }
+    }
+
 }

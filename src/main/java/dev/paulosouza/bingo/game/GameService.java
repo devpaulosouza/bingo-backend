@@ -2,6 +2,7 @@ package dev.paulosouza.bingo.game;
 
 import dev.paulosouza.bingo.dto.request.MarkRequest;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
+import dev.paulosouza.bingo.dto.response.GameResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
 import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
@@ -82,7 +83,7 @@ public class GameService {
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.SECONDS);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 5, TimeUnit.MILLISECONDS);
 
         SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards));
     }
@@ -99,6 +100,7 @@ public class GameService {
             this.notifyWinner(card.getPlayer());
             this.isGameRunning = false;
             this.scheduledExecutorService.shutdown();
+            this.cards.remove(card);
         }
 
         return BingoResponse.builder()
@@ -107,9 +109,33 @@ public class GameService {
     }
 
     public void clean() {
-        this.cards.clear();
         this.isAcceptingNewPlayers = true;
         this.isGameRunning = false;
+        this.cards.forEach(card -> {
+            do {
+                card.setNumbers(GameUtils.drawCardNumbers());
+            } while (this.cardAlreadyExists(card));
+        });
+        this.notifyClean();
+    }
+
+    public GameResponse getGame(UUID playerId) {
+        GameResponse response = new GameResponse();
+
+        Card card = this.cards.stream()
+                .filter(c -> c.getPlayer().getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
+
+        response.setCard(card);
+
+        if (!this.drawnNumbers.isEmpty()) {
+            response.setNumber(this.drawnNumbers.get(this.drawnNumbers.size() - 1));
+            response.setDrawnNumbers(this.drawnNumbers);
+        }
+        response.setGameRunning(this.isGameRunning);
+
+        return response;
     }
 
     public void addListener(UUID playerId, SseEmitter emitter) {
@@ -143,6 +169,12 @@ public class GameService {
         SseUtils.broadcastDrawnNumberMessage(
                 SseUtils.mapEmitters(this.cards),
                 new DrawnNumberResponse(number, this.drawnNumbers)
+        );
+    }
+
+    private void notifyClean() {
+        SseUtils.broadcastClean(
+                SseUtils.mapEmitters(this.cards)
         );
     }
 
@@ -194,5 +226,4 @@ public class GameService {
     private boolean cardIsEquals(List<Integer> playerNumbers, List<Integer> otherPlayerNumbers) {
         return new HashSet<>(otherPlayerNumbers).containsAll(playerNumbers);
     }
-
 }

@@ -19,7 +19,7 @@ public class Card {
 
     private int[][] numbers;
 
-    private final boolean[][] markedNumbers = new boolean[5][5];
+    private boolean[][] markedNumbers = new boolean[5][5];
 
     private List<Integer> numbersList;
 
@@ -31,6 +31,7 @@ public class Card {
                 .flatMapToInt(Arrays::stream)
                 .boxed()
                 .toList();
+        this.markedNumbers = new boolean[5][5];
     }
 
 }
