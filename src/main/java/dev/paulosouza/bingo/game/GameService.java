@@ -5,7 +5,6 @@ import dev.paulosouza.bingo.dto.response.BingoResponse;
 import dev.paulosouza.bingo.dto.response.MarkResponse;
 import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
-import dev.paulosouza.bingo.socket.WebSocket;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
 import dev.paulosouza.bingo.utils.SseUtils;
@@ -38,8 +37,6 @@ public class GameService {
     private final List<Integer> drawnNumbers = new ArrayList<>();
 
     private ScheduledExecutorService scheduledExecutorService;
-
-    private final WebSocket webSocket;
 
     public Card join(Player player) {
         this.validateJoin();
