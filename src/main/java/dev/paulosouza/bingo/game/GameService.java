@@ -129,6 +129,7 @@ public class GameService {
             } while (this.cardAlreadyExists(card));
         });
         this.notifyClean();
+        this.scheduledExecutorService.shutdown();
     }
 
     public GameResponse getGame(UUID playerId) {
