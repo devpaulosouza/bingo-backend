@@ -147,7 +147,9 @@ public class GameService {
         });
         this.notifyClean();
         this.drawnNumbers.clear();
-        this.scheduledExecutorService.shutdown();
+        if (this.scheduledExecutorService != null) {
+            this.scheduledExecutorService.shutdown();
+        }
     }
 
     public GameResponse getGame(UUID playerId) {
