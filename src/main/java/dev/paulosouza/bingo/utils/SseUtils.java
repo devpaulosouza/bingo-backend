@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.utils;
 
+import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.dto.response.sse.*;
 import dev.paulosouza.bingo.game.Card;
 import dev.paulosouza.bingo.game.Player;
@@ -51,6 +52,10 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendJoinMessage(emitter, card));
     }
 
+    public static void broadcastGameMode(List<SseEmitter> emitters, GameMode mode) {
+        emitters.forEach(emitter -> SseUtils.sendGameModeMessage(emitter, mode));
+    }
+
     private static void sendStartedMessage(SseEmitter emitter) {
         try {
             emitter.send(new StartedResponse(true));
@@ -96,6 +101,14 @@ public class SseUtils {
             emitter.send(card);
         } catch (Exception e) {
             log.error("Error sending join message: {}", e.getMessage());
+        }
+    }
+
+    private static void sendGameModeMessage(SseEmitter emitter, GameMode mode) {
+        try {
+            emitter.send(new GameModeResponse(mode));
+        } catch (Exception e) {
+            log.error("Error sending game mode message: {}", e.getMessage());
         }
     }
 

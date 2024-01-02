@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.controller;
 
+import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.dto.request.MarkRequest;
 import dev.paulosouza.bingo.dto.response.AdminGameResponse;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
@@ -86,6 +87,13 @@ public class GameController {
     @PostMapping("/allow-list")
     public ResponseEntity<Void> allowList(@RequestBody List<String> usernames) {
         this.gameService.setAllowList(usernames);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/game-mode")
+    public ResponseEntity<Void> setGameMode(@RequestBody GameMode gameMode) {
+        this.gameService.setGameMode(gameMode);
 
         return ResponseEntity.noContent().build();
     }

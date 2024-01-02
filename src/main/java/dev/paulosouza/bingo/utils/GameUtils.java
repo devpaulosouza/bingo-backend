@@ -10,8 +10,24 @@ public class GameUtils {
 
     }
 
+    public static boolean checkBlackoutWinner(boolean[][] markedNumbers, int[][] numbers, List<Integer> drawnNumbers) {
+        boolean won = true;
+
+        for (int i = 0; i < markedNumbers.length; i++) {
+            for (int j = 0; j < markedNumbers[0].length; j++) {
+                if (i == 2 && j == 2) {
+                    continue;
+                }
+
+                won &= markedNumbers[i][j] && drawnNumbers.contains(numbers[i][j]);
+            }
+        }
+
+        return won;
+    }
+
     @SuppressWarnings("java:S3776")
-    public static boolean checkWinner(boolean[][] markedNumbers, int[][] numbers, List<Integer> drawnNumbers) {
+    public static boolean checkStandardWinner(boolean[][] markedNumbers, int[][] numbers, List<Integer> drawnNumbers) {
         boolean wonByMainDiagonal = true;
         boolean wonBySecondaryDiagonal = true;
 

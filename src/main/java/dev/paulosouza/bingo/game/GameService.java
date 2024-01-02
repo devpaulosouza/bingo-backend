@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.game;
 
+import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.dto.request.MarkRequest;
 import dev.paulosouza.bingo.dto.response.AdminGameResponse;
 import dev.paulosouza.bingo.dto.response.BingoResponse;
@@ -45,6 +46,8 @@ public class GameService {
 
     private final List<String> allowList = new ArrayList<>();
 
+    private GameMode mode = GameMode.STANDARD;
+
     private ScheduledExecutorService scheduledExecutorService;
 
     public Card join(Player player) {
@@ -79,7 +82,7 @@ public class GameService {
 
         this.notifyMarked(new MarkedResponse(request.getPlayerId(), request.getI(), request.getJ(), request.isMarked()));
 
-        if (GameUtils.checkWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)) {
+        if (GameUtils.checkStandardWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)) {
             response.setWinner(true);
         }
 
@@ -105,7 +108,9 @@ public class GameService {
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException("Player not found"));
 
-        boolean isWinner = GameUtils.checkWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers);
+        boolean isWinner = GameMode.STANDARD.equals(this.mode) ?
+                GameUtils.checkStandardWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)
+                : GameUtils.checkBlackoutWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers);
 
         if (isWinner) {
             this.notifyWinner(card.getPlayer());
@@ -148,6 +153,7 @@ public class GameService {
             response.setDrawnNumbers(this.drawnNumbers);
         }
         response.setGameRunning(this.isGameRunning);
+        response.setMode(this.mode);
 
         return response;
     }
@@ -163,6 +169,7 @@ public class GameService {
         }
         response.setGameRunning(this.isGameRunning);
         response.setWinners(this.winners);
+        response.setMode(this.mode);
 
         return response;
     }
@@ -184,6 +191,11 @@ public class GameService {
     public void setAllowList(List<String> usernames) {
         this.allowList.clear();
         this.allowList.addAll(usernames);
+    }
+
+    public void setGameMode(GameMode mode) {
+        this.mode = mode;
+        this.notifyGameMode(mode);
     }
 
     private void drawNumber() {
@@ -227,6 +239,13 @@ public class GameService {
         SseUtils.broadcastJoin(
                 this.admins,
                 card
+        );
+    }
+
+    private void notifyGameMode(GameMode mode) {
+        SseUtils.broadcastGameMode(
+                SseUtils.mapEmitters(this.cards, this.admins),
+                mode
         );
     }
 

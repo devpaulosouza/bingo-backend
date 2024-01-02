@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.dto.response;
 
+import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.game.Card;
 import dev.paulosouza.bingo.game.Player;
 import lombok.Data;
@@ -18,5 +19,7 @@ public class AdminGameResponse {
     private int number;
 
     private boolean isGameRunning;
+
+    private GameMode mode;
 
 }
