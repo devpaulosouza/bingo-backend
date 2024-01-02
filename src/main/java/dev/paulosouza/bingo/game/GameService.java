@@ -2,13 +2,12 @@ package dev.paulosouza.bingo.game;
 
 import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.dto.request.MarkRequest;
-import dev.paulosouza.bingo.dto.response.AdminGameResponse;
-import dev.paulosouza.bingo.dto.response.BingoResponse;
-import dev.paulosouza.bingo.dto.response.GameResponse;
-import dev.paulosouza.bingo.dto.response.MarkResponse;
+import dev.paulosouza.bingo.dto.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.response.*;
 import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.dto.response.sse.MarkedResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
+import dev.paulosouza.bingo.mapper.PlayerMapper;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
 import dev.paulosouza.bingo.utils.SseUtils;
@@ -46,12 +45,18 @@ public class GameService {
 
     private final List<String> allowList = new ArrayList<>();
 
+    private String password = "asdqwe";
+
+    private boolean hasPassword = true;
+
     private GameMode mode = GameMode.STANDARD;
 
     private ScheduledExecutorService scheduledExecutorService;
 
-    public Card join(Player player) {
-        this.validateJoin(player);
+    public Card join(PlayerRequest request) {
+        this.validateJoin(request);
+
+        Player player = PlayerMapper.toEntity(request);
 
         Card card = Card.builder()
                 .id(UUID.randomUUID())
@@ -198,6 +203,24 @@ public class GameService {
         this.notifyGameMode(mode);
     }
 
+    public void setPassword(String password) {
+        if ("".equals(password) || password == null) {
+            this.password = null;
+            this.hasPassword = false;
+        } else {
+            this.password = password;
+            this.hasPassword = true;
+        }
+    }
+
+    public HasPasswordResponse hasPassword() {
+        HasPasswordResponse response = new HasPasswordResponse();
+
+        response.setHasPassword(this.hasPassword);
+
+        return response;
+    }
+
     private void drawNumber() {
         if (possibleNumbers.isEmpty()) {
             this.scheduledExecutorService.shutdown();
@@ -271,9 +294,16 @@ public class GameService {
         return !(request.getI() == 2 && request.getJ() == 2);
     }
 
-    private void validateJoin(Player player) {
+    private void validateJoin(PlayerRequest player) {
         this.validateAcceptingNewPlayers();
         this.validateAllowList(player.getUsername());
+        this.validatePassword(player.getPassword());
+    }
+
+    private void validatePassword(String password) {
+        if (this.hasPassword && !this.password.equals(password)) {
+            throw new UnprocessableEntityException("Password does not match");
+        }
     }
 
     private void validateAllowList(String username) {

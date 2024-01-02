@@ -2,13 +2,11 @@ package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.request.GameMode;
 import dev.paulosouza.bingo.dto.request.MarkRequest;
-import dev.paulosouza.bingo.dto.response.AdminGameResponse;
-import dev.paulosouza.bingo.dto.response.BingoResponse;
-import dev.paulosouza.bingo.dto.response.GameResponse;
-import dev.paulosouza.bingo.dto.response.MarkResponse;
+import dev.paulosouza.bingo.dto.request.PasswordRequest;
+import dev.paulosouza.bingo.dto.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.response.*;
 import dev.paulosouza.bingo.game.Card;
 import dev.paulosouza.bingo.game.GameService;
-import dev.paulosouza.bingo.game.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +23,7 @@ public class GameController {
     private GameService gameService;
 
     @PostMapping("join")
-    public ResponseEntity<Card> join(@RequestBody Player player) {
+    public ResponseEntity<Card> join(@RequestBody PlayerRequest player) {
         Card card = this.gameService.join(player);
 
         return ResponseEntity.ok(card);
@@ -96,6 +94,20 @@ public class GameController {
         this.gameService.setGameMode(gameMode);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<Void> setPassword(@RequestBody PasswordRequest request) {
+        this.gameService.setPassword(request.getPassword());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/has-password")
+    public ResponseEntity<HasPasswordResponse> getHasPassword() {
+        HasPasswordResponse response = this.gameService.hasPassword();
+
+        return ResponseEntity.ok(response);
     }
 
 }
