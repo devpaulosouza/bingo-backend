@@ -326,7 +326,7 @@ public class GameService {
     }
 
     private void validateAllowList(String username) {
-        if (!this.allowList.isEmpty() && !this.allowList.contains(username)) {
+        if (!this.allowList.isEmpty() && !this.allowList.stream().map(String::toLowerCase).toList().contains(username.toLowerCase())) {
             throw new UnprocessableEntityException("Username is not allowed to play in this session");
         }
     }
