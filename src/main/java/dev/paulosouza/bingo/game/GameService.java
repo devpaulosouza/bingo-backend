@@ -107,6 +107,10 @@ public class GameService {
         this.possibleNumbers = ListUtils.buildList(1, 75);
         this.drawnNumbers.clear();
 
+        if (this.scheduledExecutorService != null) {
+            this.scheduledExecutorService.shutdown();
+        }
+
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
         this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
