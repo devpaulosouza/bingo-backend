@@ -16,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +42,7 @@ public class GameService {
 
     private final List<String> allowList = new ArrayList<>();
 
-    private String password = "asdqwe";
+    private String password = "sapa1";
 
     private boolean hasPassword = true;
 
@@ -54,9 +51,19 @@ public class GameService {
     private ScheduledExecutorService scheduledExecutorService;
 
     public Card join(PlayerRequest request) {
-        this.validateJoin(request);
+        this.validatePassword(request.getPassword());
 
         Player player = PlayerMapper.toEntity(request);
+
+        Optional<Card> existent = this.cards.stream()
+                .filter(card -> card.getPlayer().getUsername().equals(request.getUsername()))
+                .findFirst();
+
+        if (existent.isPresent()) {
+            return existent.get();
+        }
+
+        this.validateJoin(request);
 
         Card card = Card.builder()
                 .id(UUID.randomUUID())
@@ -297,7 +304,13 @@ public class GameService {
     private void validateJoin(PlayerRequest player) {
         this.validateAcceptingNewPlayers();
         this.validateAllowList(player.getUsername());
-        this.validatePassword(player.getPassword());
+        this.validateMaximumPlayers();
+    }
+
+    private void validateMaximumPlayers() {
+        if (this.cards.size() >= 50) {
+            throw new UnprocessableEntityException("Max players reached");
+        }
     }
 
     private void validatePassword(String password) {

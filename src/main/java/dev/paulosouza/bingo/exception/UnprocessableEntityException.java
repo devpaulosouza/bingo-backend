@@ -7,7 +7,7 @@ import java.net.URI;
 
 public class UnprocessableEntityException extends AbstractThrowableProblem {
 
-    static final URI TYPE = URI.create("https://company.seurole.com.br/not-found");
+    static final URI TYPE = URI.create("https://dev.paulosouza/unprocessable-entity");
 
     public UnprocessableEntityException(String cause) {
         super(
