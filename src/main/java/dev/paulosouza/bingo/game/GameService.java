@@ -121,6 +121,8 @@ public class GameService {
     }
 
     public synchronized BingoResponse bingo(UUID playerId) {
+        this.validateGameIsRunning();
+
         Card card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(playerId))
                 .findFirst()
@@ -369,6 +371,6 @@ public class GameService {
     }
 
     private boolean cardIsEquals(List<Integer> playerNumbers, List<Integer> otherPlayerNumbers) {
-        return new HashSet<>(otherPlayerNumbers).containsAll(playerNumbers);
+        return playerNumbers.stream().sorted().toList().equals(otherPlayerNumbers.stream().sorted().toList());
     }
 }
