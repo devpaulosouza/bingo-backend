@@ -56,6 +56,10 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendGameModeMessage(emitter, mode));
     }
 
+    public static void broadcastPing(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendPingMessage);
+    }
+
     private static void sendStartedMessage(SseEmitter emitter) {
         try {
             emitter.send(new StartedResponse(true));
@@ -109,6 +113,14 @@ public class SseUtils {
             emitter.send(new GameModeResponse(mode));
         } catch (Exception e) {
             log.error("Error sending game mode message: {}", e.getMessage());
+        }
+    }
+
+    private static void sendPingMessage(SseEmitter emitter) {
+        try {
+            emitter.send("ping");
+        } catch (Exception e) {
+            log.error("Error sending ping message: {}", e.getMessage());
         }
     }
 

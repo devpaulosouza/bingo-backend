@@ -50,6 +50,8 @@ public class GameService {
 
     private ScheduledExecutorService scheduledExecutorService;
 
+    private ScheduledExecutorService pingScheduler;
+
     public Card join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
 
@@ -111,6 +113,8 @@ public class GameService {
             this.scheduledExecutorService.shutdown();
         }
 
+        this.startPing();
+
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
         this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
@@ -150,6 +154,7 @@ public class GameService {
             } while (this.cardAlreadyExists(card));
         });
         this.notifyClean();
+        this.startPing();
         this.drawnNumbers.clear();
         if (this.scheduledExecutorService != null) {
             this.scheduledExecutorService.shutdown();
@@ -245,6 +250,21 @@ public class GameService {
         this.notifyNumber(number);
 
         log.info("drawn number = {}", number);
+    }
+
+    private void startPing() {
+        if (this.pingScheduler != null) {
+            this.pingScheduler.shutdown();
+            this.pingScheduler = Executors.newSingleThreadScheduledExecutor();
+        }
+
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
+    }
+
+    private void notifyPing() {
+        SseUtils.broadcastPing(
+                SseUtils.mapEmitters(this.cards, this.admins)
+        );
     }
 
     private void notifyWinner(Player player) {
