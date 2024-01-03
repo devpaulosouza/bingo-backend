@@ -120,7 +120,7 @@ public class GameService {
         SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards, this.admins));
     }
 
-    public BingoResponse bingo(UUID playerId) {
+    public synchronized BingoResponse bingo(UUID playerId) {
         Card card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(playerId))
                 .findFirst()
