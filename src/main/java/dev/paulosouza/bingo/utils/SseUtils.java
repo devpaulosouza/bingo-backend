@@ -118,7 +118,7 @@ public class SseUtils {
 
     private static void sendPingMessage(SseEmitter emitter) {
         try {
-            emitter.send("ping");
+            emitter.send(new PingResponse());
         } catch (Exception e) {
             log.error("Error sending ping message: {}", e.getMessage());
         }
