@@ -253,10 +253,10 @@ public class GameService {
     private void startPing() {
         if (this.pingScheduler != null) {
             this.pingScheduler.shutdown();
-            this.pingScheduler = Executors.newSingleThreadScheduledExecutor();
         }
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
+        this.pingScheduler = Executors.newSingleThreadScheduledExecutor();
+        this.pingScheduler.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
     }
 
     private void notifyPing() {
