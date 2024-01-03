@@ -52,7 +52,7 @@ public class GameService {
 
     private ScheduledExecutorService pingScheduler;
 
-    public Card join(PlayerRequest request) {
+    public synchronized Card join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
 
         Player player = PlayerMapper.toEntity(request);
