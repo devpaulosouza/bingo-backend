@@ -4,7 +4,7 @@ import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.MarkResponse;
 import dev.paulosouza.bingo.game.bingo.BingoService;
-import dev.paulosouza.bingo.game.bingo.Card;
+import dev.paulosouza.bingo.game.bingo.BingoCard;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ class BingoServiceTest {
         // given
 
         // when
-        Card card = this.bingoService.join(new PlayerRequest());
+        BingoCard card = this.bingoService.join(new PlayerRequest());
 
         // then
         Assertions.assertNotNull(card);
@@ -36,7 +36,7 @@ class BingoServiceTest {
     @Test
     void mark() {
         // given
-        Card card = this.bingoService.join(new PlayerRequest());
+        BingoCard card = this.bingoService.join(new PlayerRequest());
         this.bingoService.startGame();
 
         MarkRequest request = new MarkRequest();

@@ -1,7 +1,7 @@
 package dev.paulosouza.bingo.mapper;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
-import dev.paulosouza.bingo.game.bingo.Player;
+import dev.paulosouza.bingo.game.Player;
 import org.springframework.beans.BeanUtils;
 
 public class PlayerMapper {

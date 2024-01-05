@@ -6,7 +6,7 @@ import dev.paulosouza.bingo.dto.bingo.request.PasswordRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
 import dev.paulosouza.bingo.game.bingo.BingoService;
-import dev.paulosouza.bingo.game.bingo.Card;
+import dev.paulosouza.bingo.game.bingo.BingoCard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +23,8 @@ public class BingoController {
     private BingoService bingoService;
 
     @PostMapping("join")
-    public ResponseEntity<Card> join(@RequestBody PlayerRequest player) {
-        Card card = this.bingoService.join(player);
+    public ResponseEntity<BingoCard> join(@RequestBody PlayerRequest player) {
+        BingoCard card = this.bingoService.join(player);
 
         return ResponseEntity.ok(card);
     }

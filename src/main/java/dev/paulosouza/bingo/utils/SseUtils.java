@@ -2,8 +2,8 @@ package dev.paulosouza.bingo.utils;
 
 import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
-import dev.paulosouza.bingo.game.bingo.Card;
-import dev.paulosouza.bingo.game.bingo.Player;
+import dev.paulosouza.bingo.game.bingo.BingoCard;
+import dev.paulosouza.bingo.game.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -17,11 +17,11 @@ public class SseUtils {
 
     }
 
-    public static List<SseEmitter> mapEmitters(List<Card> cards, List<SseEmitter> admins) {
+    public static List<SseEmitter> mapEmitters(List<BingoCard> cards, List<SseEmitter> admins) {
         return Stream.concat(
                         cards
                                 .stream()
-                                .map(Card::getPlayer)
+                                .map(BingoCard::getPlayer)
                                 .map(Player::getEmitter),
                         admins.stream()
                 )
@@ -48,7 +48,7 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendMarkedMessage(emitter, markedResponse));
     }
 
-    public static void broadcastJoin(List<SseEmitter> emitters, Card card) {
+    public static void broadcastJoin(List<SseEmitter> emitters, BingoCard card) {
         emitters.forEach(emitter -> SseUtils.sendJoinMessage(emitter, card));
     }
 
@@ -100,7 +100,7 @@ public class SseUtils {
         }
     }
 
-    private static void sendJoinMessage(SseEmitter emitter, Card card) {
+    private static void sendJoinMessage(SseEmitter emitter, BingoCard card) {
         try {
             emitter.send(card);
         } catch (Exception e) {

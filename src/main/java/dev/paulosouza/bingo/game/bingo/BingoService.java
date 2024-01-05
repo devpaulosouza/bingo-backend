@@ -7,6 +7,7 @@ import dev.paulosouza.bingo.dto.bingo.response.*;
 import dev.paulosouza.bingo.dto.bingo.response.sse.DrawnNumberResponse;
 import dev.paulosouza.bingo.dto.bingo.response.sse.MarkedResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
+import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
@@ -33,7 +34,7 @@ public class BingoService {
 
     private boolean isGameRunning = false;
 
-    private final List<Card> cards = new ArrayList<>();
+    private final List<BingoCard> cards = new ArrayList<>();
 
     private final List<Player> winners = new ArrayList<>();
 
@@ -55,12 +56,12 @@ public class BingoService {
 
     private ScheduledExecutorService pingScheduler;
 
-    public synchronized Card join(PlayerRequest request) {
+    public synchronized BingoCard join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
 
         Player player = PlayerMapper.toEntity(request);
 
-        Optional<Card> existent = this.cards.stream()
+        Optional<BingoCard> existent = this.cards.stream()
                 .filter(card -> card.getPlayer().getUsername().equals(request.getUsername()))
                 .findFirst();
 
@@ -70,7 +71,7 @@ public class BingoService {
 
         this.validateJoin(request);
 
-        Card card = Card.builder()
+        BingoCard card = BingoCard.builder()
                 .id(UUID.randomUUID())
                 .player(player)
                 .build();
@@ -90,7 +91,7 @@ public class BingoService {
 
         this.validateMark(request);
 
-        Card card = this.cards.stream()
+        BingoCard card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(request.getPlayerId()))
                 .findFirst()
                 .orElseThrow();
@@ -126,7 +127,7 @@ public class BingoService {
     public synchronized BingoResponse bingo(UUID playerId) {
         this.validateGameIsRunning();
 
-        Card card = this.cards.stream()
+        BingoCard card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(playerId))
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException("Player not found"));
@@ -166,7 +167,7 @@ public class BingoService {
     public GameResponse getGame(UUID playerId) {
         GameResponse response = new GameResponse();
 
-        Card card = this.cards.stream()
+        BingoCard card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(playerId))
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
@@ -294,7 +295,7 @@ public class BingoService {
         );
     }
 
-    private void notifyJoin(Card card) {
+    private void notifyJoin(BingoCard card) {
         SseUtils.broadcastJoin(
                 this.admins,
                 card
@@ -321,7 +322,7 @@ public class BingoService {
 
     private boolean playerExists(UUID playerId) {
         return this.cards.stream()
-                .map(Card::getPlayer)
+                .map(BingoCard::getPlayer)
                 .map(Player::getId)
                 .anyMatch(playerId::equals);
     }
@@ -367,7 +368,7 @@ public class BingoService {
     }
 
 
-    private boolean cardAlreadyExists(Card card) {
+    private boolean cardAlreadyExists(BingoCard card) {
         return this.cards.stream()
                 .filter(c -> !c.getId().equals(card.getId()))
                 .anyMatch(c -> this.cardIsEquals(c.getNumbersList(), card.getNumbersList()));

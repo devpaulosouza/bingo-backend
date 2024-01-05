@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.game.bingo;
 
+import dev.paulosouza.bingo.game.Player;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Card {
+public class BingoCard {
 
     private UUID id;
 

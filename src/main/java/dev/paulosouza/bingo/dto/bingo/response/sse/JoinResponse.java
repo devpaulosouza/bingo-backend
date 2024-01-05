@@ -1,6 +1,6 @@
 package dev.paulosouza.bingo.dto.bingo.response.sse;
 
-import dev.paulosouza.bingo.game.bingo.Card;
+import dev.paulosouza.bingo.game.bingo.BingoCard;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,9 +8,9 @@ import lombok.EqualsAndHashCode;
 @Data
 public class JoinResponse extends SseEventResponse {
 
-    private Card card;
+    private BingoCard card;
 
-    public JoinResponse(Card card) {
+    public JoinResponse(BingoCard card) {
         super(SseEventType.JOIN);
         this.card = card;
     }
