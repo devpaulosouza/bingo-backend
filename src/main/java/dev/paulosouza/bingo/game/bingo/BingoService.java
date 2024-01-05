@@ -122,7 +122,7 @@ public class BingoService {
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.MILLISECONDS);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
 
         SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards, this.admins));
     }
