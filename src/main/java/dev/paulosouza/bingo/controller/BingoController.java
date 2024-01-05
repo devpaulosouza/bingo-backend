@@ -1,10 +1,12 @@
 package dev.paulosouza.bingo.controller;
 
-import dev.paulosouza.bingo.dto.bingo.request.*;
+import dev.paulosouza.bingo.dto.bingo.request.BingoConfigRequest;
+import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
+import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
-import dev.paulosouza.bingo.game.bingo.BingoService;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
-import org.springframework.beans.factory.annotation.Autowired;
+import dev.paulosouza.bingo.game.bingo.BingoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -13,10 +15,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/games/bingo")
+@RequiredArgsConstructor
 public class BingoController {
 
-    @Autowired
-    private BingoService bingoService;
+    private final BingoService bingoService;
 
     @PostMapping("join")
     public ResponseEntity<BingoCard> join(@RequestBody PlayerRequest player) {
