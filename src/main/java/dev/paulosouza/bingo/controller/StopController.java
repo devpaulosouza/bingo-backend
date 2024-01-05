@@ -3,6 +3,7 @@ package dev.paulosouza.bingo.controller;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
+import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import dev.paulosouza.bingo.game.stop.StopService;
@@ -42,7 +43,14 @@ public class StopController {
 
     @PostMapping("/users/{playerId}/validate-word")
     public ResponseEntity<Void> validateWord(@RequestBody StopValidateWordRequest request) {
-        this.stopService.validateWord(request);
+        this.stopService.setValidWord(request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/users/{playerId}/set-word")
+    public ResponseEntity<Void> validateWord(@RequestBody StopSetWordRequest request) {
+        this.stopService.setWord(request);
 
         return ResponseEntity.noContent().build();
     }

@@ -3,6 +3,7 @@ package dev.paulosouza.bingo.game.stop;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
+import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
@@ -21,11 +22,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class StopService {
 
-    private static final int WORDS_COUNT = 10;
+    private static final int WORDS_COUNT = 2;
 
     private static final int CAN_STOP_SECONDS = 20;
 
     private static final int STOP_SECONDS = 90;
+
+    private static final int INCREMENT_VALIDATE_WORD_SECONDS = 20;
 
     private List<StopGame> games = new ArrayList<>();
 
@@ -51,6 +54,10 @@ public class StopService {
     private ScheduledExecutorService schedulerCanStop;
 
     private ScheduledExecutorService schedulerStop;
+
+    private ScheduledExecutorService schedulerValidateWord;
+
+    private int validateWordCount = -1;
 
 
     public synchronized StopGame join(PlayerRequest request) {
@@ -92,6 +99,7 @@ public class StopService {
         this.isGameRunning = true;
         this.canStop = false;
         this.isStopped = false;
+        this.validateWordCount = -1;
 
         response.setCanStopAt(LocalDateTime.now().plusSeconds(CAN_STOP_SECONDS));
         response.setEndAt(LocalDateTime.now().plusSeconds(STOP_SECONDS));
@@ -129,10 +137,19 @@ public class StopService {
         this.validateGameIsRunning();
         this.validateIsNotStopped();
         this.stop();
+
+
+        if (this.schedulerValidateWord != null) {
+            this.schedulerValidateWord.shutdown();
+        }
+
+        this.schedulerValidateWord = Executors.newSingleThreadScheduledExecutor();
+        this.schedulerValidateWord.scheduleWithFixedDelay(this::incrementValidateWordCount, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
+
         this.notifyStopped(playerId);
     }
 
-    public synchronized void validateWord(StopValidateWordRequest request) {
+    public synchronized void setValidWord(StopValidateWordRequest request) {
         this.validateGameIsRunning();
         this.validateIsStopped();
 
@@ -140,9 +157,30 @@ public class StopService {
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
 
-        int playerPosition = request.getPosition() % 10;
+        int position = request.getPosition();
 
-        game.getValidWords()[playerPosition] = request.isValid();
+        if (request.isValid()) {
+            game.getValidWords()[position] = Math.min(10, game.getValidWords()[position] + 1);
+        } else {
+            game.getValidWords()[position] = Math.max(0, game.getValidWords()[position] - 1);
+        }
+    }
+
+    public void setWord(StopSetWordRequest request) {
+        this.validateSetWord(request);
+
+        StopGame game = this.games.stream().filter(g -> g.getPlayer().getId().equals(request.getPlayerId()))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
+
+        game.getWords()[request.getPosition()] = request.getWord();
+    }
+
+    private void validateSetWord(StopSetWordRequest request) {
+        this.validateGameIsRunning();
+        this.validateIsNotStopped();
+        this.validateWordPosition(request.getPosition());
+        this.validateWord(request.getWord());
     }
 
     private void validateJoin(PlayerRequest player) {
@@ -193,6 +231,18 @@ public class StopService {
         }
     }
 
+    private void validateWordPosition(int position) {
+        if (position >= WORDS_COUNT) {
+            throw new UnprocessableEntityException("Invalid word position");
+        }
+    }
+
+    private void validateWord(String word) {
+        if (!word.startsWith(this.letter + "")) {
+            throw new UnprocessableEntityException("Word must start with the drawn letter");
+        }
+    }
+
     private void setAllowList(List<String> usernames) {
         this.allowList.clear();
         this.allowList.addAll(usernames);
@@ -225,9 +275,53 @@ public class StopService {
 
     }
 
+    private void notifyValidateWord(int validateWordCount) {
+
+    }
+
     private void stop() {
         log.info("stopped");
         this.isStopped = true;
         this.schedulerStop.shutdown();
     }
+
+    private void incrementValidateWordCount() {
+        this.validateWordCount++;
+
+        if (this.validateWordCount >= WORDS_COUNT) {
+            this.schedulerValidateWord.shutdown();
+            this.finish();
+            return;
+        }
+
+        log.info("incrementing validate word count = {}", this.validateWordCount);
+        this.notifyValidateWord(this.validateWordCount);
+    }
+
+    private void finish() {
+        int playersCount = this.games.size();
+
+        this.games.forEach(game -> {
+            game.setScore(0);
+
+            for (int i = 0; i < game.getWords().length; i++) {
+                int finalI = i;
+
+                int percentageValid = playersCount >= 10 ? 6 : (playersCount / 6 * 100);
+
+                game.setScore(game.getValidWords()[i] < percentageValid ? 0 : playersCount);
+
+                game.setScore(
+                        game.getScore() - games.stream()
+                                .map(g -> g.getWords()[finalI])
+                                .filter(Objects::nonNull)
+                                .map(s -> s.replaceAll("\\s", ""))
+                                .filter(game.getWords()[i]::equalsIgnoreCase)
+                                .count()
+                );
+            }
+            log.info("game score {}", game.getScore());
+        });
+    }
+
 }

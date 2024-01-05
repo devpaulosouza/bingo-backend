@@ -23,12 +23,14 @@ public class StopGame {
 
     private String[] words;
 
-    private boolean[] validWords;
+    private int[] validWords;
+
+    private long score;
 
     public void setWords(String[] words) {
         this.words = words;
-        this.validWords = new boolean[10];
-        Arrays.fill(this.validWords, true);
+        this.validWords = new int[10];
+        Arrays.fill(this.validWords, 10);
     }
 
 }
