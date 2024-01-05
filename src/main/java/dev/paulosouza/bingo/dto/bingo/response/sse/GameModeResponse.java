@@ -1,6 +1,6 @@
-package dev.paulosouza.bingo.dto.response.sse;
+package dev.paulosouza.bingo.dto.bingo.response.sse;
 
-import dev.paulosouza.bingo.dto.request.GameMode;
+import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,9 +8,9 @@ import lombok.EqualsAndHashCode;
 @Data
 public class GameModeResponse extends SseEventResponse {
 
-    private GameMode mode;
+    private BingoMode mode;
 
-    public GameModeResponse(GameMode mode) {
+    public GameModeResponse(BingoMode mode) {
         super(SseEventType.GAME_MODE);
         this.mode = mode;
     }

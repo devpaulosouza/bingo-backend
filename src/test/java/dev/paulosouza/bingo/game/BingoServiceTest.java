@@ -1,8 +1,10 @@
 package dev.paulosouza.bingo.game;
 
-import dev.paulosouza.bingo.dto.request.MarkRequest;
-import dev.paulosouza.bingo.dto.request.PlayerRequest;
-import dev.paulosouza.bingo.dto.response.MarkResponse;
+import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
+import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.MarkResponse;
+import dev.paulosouza.bingo.game.bingo.BingoService;
+import dev.paulosouza.bingo.game.bingo.Card;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,17 +12,17 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class GameServiceTest {
+class BingoServiceTest {
 
     @InjectMocks
-    private GameService gameService;
+    private BingoService bingoService;
 
     @Test
     void join() {
         // given
 
         // when
-        Card card = this.gameService.join(new PlayerRequest());
+        Card card = this.bingoService.join(new PlayerRequest());
 
         // then
         Assertions.assertNotNull(card);
@@ -34,8 +36,8 @@ class GameServiceTest {
     @Test
     void mark() {
         // given
-        Card card = this.gameService.join(new PlayerRequest());
-        this.gameService.startGame();
+        Card card = this.bingoService.join(new PlayerRequest());
+        this.bingoService.startGame();
 
         MarkRequest request = new MarkRequest();
 
@@ -45,7 +47,7 @@ class GameServiceTest {
         request.setPlayerId(card.getPlayer().getId());
 
         // when
-        MarkResponse response = this.gameService.mark(request);
+        MarkResponse response = this.bingoService.mark(request);
 
         // then
         Assertions.assertNotNull(response);

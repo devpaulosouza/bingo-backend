@@ -1,6 +1,6 @@
-package dev.paulosouza.bingo.dto.response.sse;
+package dev.paulosouza.bingo.dto.bingo.response.sse;
 
-import dev.paulosouza.bingo.game.Card;
+import dev.paulosouza.bingo.game.bingo.Card;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

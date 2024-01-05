@@ -1,8 +1,8 @@
-package dev.paulosouza.bingo.dto.response;
+package dev.paulosouza.bingo.dto.bingo.response;
 
-import dev.paulosouza.bingo.dto.request.GameMode;
-import dev.paulosouza.bingo.game.Card;
-import dev.paulosouza.bingo.game.Player;
+import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
+import dev.paulosouza.bingo.game.bingo.Card;
+import dev.paulosouza.bingo.game.bingo.Player;
 import lombok.Data;
 
 import java.util.List;
@@ -20,6 +20,6 @@ public class AdminGameResponse {
 
     private boolean isGameRunning;
 
-    private GameMode mode;
+    private BingoMode mode;
 
 }

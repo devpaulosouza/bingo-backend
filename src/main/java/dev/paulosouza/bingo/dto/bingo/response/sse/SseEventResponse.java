@@ -1,4 +1,4 @@
-package dev.paulosouza.bingo.dto.response.sse;
+package dev.paulosouza.bingo.dto.bingo.response.sse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

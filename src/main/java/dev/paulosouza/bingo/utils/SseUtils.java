@@ -1,9 +1,9 @@
 package dev.paulosouza.bingo.utils;
 
-import dev.paulosouza.bingo.dto.request.GameMode;
-import dev.paulosouza.bingo.dto.response.sse.*;
-import dev.paulosouza.bingo.game.Card;
-import dev.paulosouza.bingo.game.Player;
+import dev.paulosouza.bingo.dto.bingo.response.sse.*;
+import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
+import dev.paulosouza.bingo.game.bingo.Card;
+import dev.paulosouza.bingo.game.bingo.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -52,7 +52,7 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendJoinMessage(emitter, card));
     }
 
-    public static void broadcastGameMode(List<SseEmitter> emitters, GameMode mode) {
+    public static void broadcastGameMode(List<SseEmitter> emitters, BingoMode mode) {
         emitters.forEach(emitter -> SseUtils.sendGameModeMessage(emitter, mode));
     }
 
@@ -108,7 +108,7 @@ public class SseUtils {
         }
     }
 
-    private static void sendGameModeMessage(SseEmitter emitter, GameMode mode) {
+    private static void sendGameModeMessage(SseEmitter emitter, BingoMode mode) {
         try {
             emitter.send(new GameModeResponse(mode));
         } catch (Exception e) {

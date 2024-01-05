@@ -1,4 +1,4 @@
-package dev.paulosouza.bingo.game;
+package dev.paulosouza.bingo.game.bingo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

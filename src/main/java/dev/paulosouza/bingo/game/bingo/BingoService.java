@@ -1,11 +1,11 @@
-package dev.paulosouza.bingo.game;
+package dev.paulosouza.bingo.game.bingo;
 
-import dev.paulosouza.bingo.dto.request.GameMode;
-import dev.paulosouza.bingo.dto.request.MarkRequest;
-import dev.paulosouza.bingo.dto.request.PlayerRequest;
-import dev.paulosouza.bingo.dto.response.*;
-import dev.paulosouza.bingo.dto.response.sse.DrawnNumberResponse;
-import dev.paulosouza.bingo.dto.response.sse.MarkedResponse;
+import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
+import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
+import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.*;
+import dev.paulosouza.bingo.dto.bingo.response.sse.DrawnNumberResponse;
+import dev.paulosouza.bingo.dto.bingo.response.sse.MarkedResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
 import dev.paulosouza.bingo.utils.GameUtils;
@@ -16,7 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GameService {
+public class BingoService {
 
     private boolean isAcceptingNewPlayers = true;
 
@@ -46,7 +49,7 @@ public class GameService {
 
     private boolean hasPassword = true;
 
-    private GameMode mode = GameMode.STANDARD;
+    private BingoMode mode = BingoMode.STANDARD;
 
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -128,7 +131,7 @@ public class GameService {
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException("Player not found"));
 
-        boolean isWinner = GameMode.STANDARD.equals(this.mode) ?
+        boolean isWinner = BingoMode.STANDARD.equals(this.mode) ?
                 GameUtils.checkStandardWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)
                 : GameUtils.checkBlackoutWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers);
 
@@ -216,7 +219,7 @@ public class GameService {
         this.allowList.addAll(usernames);
     }
 
-    public void setGameMode(GameMode mode) {
+    public void setGameMode(BingoMode mode) {
         this.mode = mode;
         this.notifyGameMode(mode);
     }
@@ -298,7 +301,7 @@ public class GameService {
         );
     }
 
-    private void notifyGameMode(GameMode mode) {
+    private void notifyGameMode(BingoMode mode) {
         SseUtils.broadcastGameMode(
                 SseUtils.mapEmitters(this.cards, this.admins),
                 mode

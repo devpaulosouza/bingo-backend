@@ -1,4 +1,4 @@
-package dev.paulosouza.bingo.dto.request;
+package dev.paulosouza.bingo.dto.bingo.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
