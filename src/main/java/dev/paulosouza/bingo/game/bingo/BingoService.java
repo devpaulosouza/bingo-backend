@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.game.bingo;
 
+import dev.paulosouza.bingo.dto.bingo.request.BingoConfigRequest;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
@@ -215,17 +216,29 @@ public class BingoService {
         this.startPing();
     }
 
-    public void setAllowList(List<String> usernames) {
+    public void setConfig(BingoConfigRequest request) {
+        if (request.getAllowList() != null) {
+            this.setAllowList(request.getAllowList());
+        }
+        if (request.getMode() != null) {
+            this.setGameMode(request.getMode());
+        }
+        if (request.getPassword() != null) {
+            this.setPassword(request.getPassword());
+        }
+    }
+
+    private void setAllowList(List<String> usernames) {
         this.allowList.clear();
         this.allowList.addAll(usernames);
     }
 
-    public void setGameMode(BingoMode mode) {
+    private void setGameMode(BingoMode mode) {
         this.mode = mode;
         this.notifyGameMode(mode);
     }
 
-    public void setPassword(String password) {
+    private void setPassword(String password) {
         if ("".equals(password) || password == null) {
             this.password = null;
             this.hasPassword = false;

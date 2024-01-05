@@ -1,9 +1,6 @@
 package dev.paulosouza.bingo.controller;
 
-import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
-import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
-import dev.paulosouza.bingo.dto.bingo.request.PasswordRequest;
-import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.request.*;
 import dev.paulosouza.bingo.dto.bingo.response.*;
 import dev.paulosouza.bingo.game.bingo.BingoService;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
@@ -82,23 +79,9 @@ public class BingoController {
         return emitter;
     }
 
-    @PostMapping("/allow-list")
-    public ResponseEntity<Void> allowList(@RequestBody List<String> usernames) {
-        this.bingoService.setAllowList(usernames);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/game-mode")
-    public ResponseEntity<Void> setGameMode(@RequestBody BingoMode bingoMode) {
-        this.bingoService.setGameMode(bingoMode);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/password")
-    public ResponseEntity<Void> setPassword(@RequestBody PasswordRequest request) {
-        this.bingoService.setPassword(request.getPassword());
+    @PostMapping("/config")
+    public ResponseEntity<Void> config(@RequestBody BingoConfigRequest request) {
+        this.bingoService.setConfig(request);
 
         return ResponseEntity.noContent().build();
     }
