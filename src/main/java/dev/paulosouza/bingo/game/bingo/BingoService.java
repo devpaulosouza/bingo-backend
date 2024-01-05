@@ -51,6 +51,8 @@ public class BingoService {
 
     private boolean hasPassword = true;
 
+    private boolean kickWinner = true;
+
     private BingoMode mode = BingoMode.STANDARD;
 
     private ScheduledExecutorService scheduledExecutorService;
@@ -120,7 +122,7 @@ public class BingoService {
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
+        this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.MILLISECONDS);
 
         SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards, this.admins));
     }
@@ -142,7 +144,10 @@ public class BingoService {
             this.isGameRunning = false;
             this.scheduledExecutorService.shutdown();
             this.winners.add(card.getPlayer());
-            this.cards.remove(card);
+
+            if (this.kickWinner) {
+                this.cards.remove(card);
+            }
         }
 
         return BingoResponse.builder()
@@ -160,6 +165,21 @@ public class BingoService {
         });
         this.notifyClean();
         this.drawnNumbers.clear();
+        if (this.scheduledExecutorService != null) {
+            this.scheduledExecutorService.shutdown();
+        }
+    }
+
+    public void kickAll() {
+        this.notifyKickAll();
+
+        this.cards.clear();
+        this.drawnNumbers.clear();
+
+        this.isAcceptingNewPlayers = true;
+        this.isGameRunning = false;
+
+
         if (this.scheduledExecutorService != null) {
             this.scheduledExecutorService.shutdown();
         }
@@ -226,6 +246,9 @@ public class BingoService {
         if (request.getPassword() != null) {
             this.setPassword(request.getPassword());
         }
+        if (request.getKickWinner() != null) {
+            this.setKickWinner(request.getKickWinner());
+        }
     }
 
     private void setAllowList(List<String> usernames) {
@@ -246,6 +269,10 @@ public class BingoService {
             this.password = password;
             this.hasPassword = true;
         }
+    }
+
+    private void setKickWinner(boolean kickWinner) {
+        this.kickWinner = kickWinner;
     }
 
     public HasPasswordResponse hasPassword() {
@@ -297,6 +324,12 @@ public class BingoService {
 
     private void notifyClean() {
         SseUtils.broadcastClean(
+                SseUtils.mapEmitters(this.cards, this.admins)
+        );
+    }
+
+    private void notifyKickAll() {
+        SseUtils.broadcastKickAll(
                 SseUtils.mapEmitters(this.cards, this.admins)
         );
     }

@@ -28,6 +28,18 @@ public class SseUtils {
                 .toList();
     }
 
+    public static List<SseEmitter> mapEmitters(List<BingoCard> cards) {
+        return cards
+                .stream()
+                .map(BingoCard::getPlayer)
+                .map(Player::getEmitter)
+                .toList();
+    }
+
+    public static void broadcastKickAll(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendKickMessage);
+    }
+
     public static void broadcastDrawnNumberMessage(List<SseEmitter> emitters, DrawnNumberResponse response) {
         emitters.forEach(emitter -> SseUtils.sendDrawnNumberMessage(emitter, response));
     }
@@ -58,6 +70,14 @@ public class SseUtils {
 
     public static void broadcastPing(List<SseEmitter> emitters) {
         emitters.forEach(SseUtils::sendPingMessage);
+    }
+
+    private static void sendKickMessage(SseEmitter emitter) {
+        try {
+            emitter.send(new KickResponse());
+        } catch (Exception e) {
+            log.error("Error sending start message: {}", e.getMessage());
+        }
     }
 
     private static void sendStartedMessage(SseEmitter emitter) {

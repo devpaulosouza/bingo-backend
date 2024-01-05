@@ -13,5 +13,6 @@ public class BingoConfigRequest {
 
     private String password;
 
+    private Boolean kickWinner;
 
 }
