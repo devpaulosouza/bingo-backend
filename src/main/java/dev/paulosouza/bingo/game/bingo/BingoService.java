@@ -243,12 +243,10 @@ public class BingoService {
         if (request.getMode() != null) {
             this.setGameMode(request.getMode());
         }
-        if (request.getPassword() != null) {
-            this.setPassword(request.getPassword());
-        }
         if (request.getKickWinner() != null) {
             this.setKickWinner(request.getKickWinner());
         }
+        this.setPassword(request.getPassword());
     }
 
     private void setAllowList(List<String> usernames) {
