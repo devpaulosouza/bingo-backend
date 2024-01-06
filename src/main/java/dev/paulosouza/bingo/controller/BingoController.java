@@ -63,8 +63,8 @@ public class BingoController {
     }
 
     @GetMapping("/users/{playerId}")
-    public ResponseEntity<GameResponse> getGame(@PathVariable("playerId") UUID playerId) {
-        GameResponse response = this.bingoService.getGame(playerId);
+    public ResponseEntity<BingoGameResponse> getGame(@PathVariable("playerId") UUID playerId) {
+        BingoGameResponse response = this.bingoService.getGame(playerId);
 
         return ResponseEntity.ok(response);
     }

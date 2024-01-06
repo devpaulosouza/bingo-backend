@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class GameResponse {
+public class BingoGameResponse {
 
     private BingoCard card;
 
