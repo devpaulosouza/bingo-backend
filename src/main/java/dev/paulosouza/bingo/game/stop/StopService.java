@@ -8,6 +8,7 @@ import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
+import dev.paulosouza.bingo.utils.StopUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +57,8 @@ public class StopService {
     private ScheduledExecutorService schedulerStop;
 
     private ScheduledExecutorService schedulerValidateWord;
+
+    private ScheduledExecutorService schedulerRestart;
 
     private int validateWordCount = -1;
 
@@ -109,6 +112,9 @@ public class StopService {
         }
         if (this.schedulerStop != null) {
             this.schedulerStop.shutdown();
+        }
+        if (this.schedulerRestart != null) {
+            this.schedulerRestart.shutdown();
         }
 
         this.schedulerCanStop = Executors.newSingleThreadScheduledExecutor();
@@ -279,10 +285,30 @@ public class StopService {
 
     }
 
+    private void notifyWinner(Player player) {
+
+    }
+
+    private void notifyRestart() {
+
+    }
+
     private void stop() {
         log.info("stopped");
         this.isStopped = true;
         this.schedulerStop.shutdown();
+    }
+
+    private void restart() {
+        if (this.schedulerRestart != null) {
+            this.schedulerRestart.shutdown();
+        }
+
+        this.notifyRestart();
+
+        this.schedulerRestart = Executors.newSingleThreadScheduledExecutor();
+        this.schedulerRestart.scheduleWithFixedDelay(this::start, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
+
     }
 
     private void incrementValidateWordCount() {
@@ -298,36 +324,21 @@ public class StopService {
         this.notifyValidateWord(this.validateWordCount);
     }
 
-    @SuppressWarnings("java:S3358")
     private void finish() {
-        int playersCount = this.games.size();
+        List<StopGame> winners = StopUtils.checkWinner(this.games);
 
-        this.games.forEach(game -> {
-            game.setScore(0);
+        log.info("Winners size = {}", winners.size());
 
-            for (int i = 0; i < game.getWords().length; i++) {
-                int finalI = i;
+        if (winners.size() == 1) {
+            this.notifyWinner(winners.get(0).getPlayer());
+            winners.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
+        } else {
+            this.games.removeIf(game -> !winners.contains(game));
+            this.restart();
+            winners.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
+        }
 
-                if (game.getWords()[finalI] == null) {
-                    continue;
-                }
 
-                int percentageValid = playersCount >= 10 ? 6 : playersCount >= 3 ? 2 : 1;
-
-                game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
-
-                game.setScore(
-                        game.getScore() - games.stream()
-                                .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
-                                .map(g -> g.getWords()[finalI])
-                                .filter(Objects::nonNull)
-                                .map(s -> s.replaceAll("\\s", ""))
-                                .filter(game.getWords()[finalI]::equalsIgnoreCase)
-                                .count()
-                );
-            }
-            log.info("game score {}", game.getScore());
-        });
     }
 
 }
