@@ -34,7 +34,6 @@ class StopUtilsTest {
         Assertions.assertEquals(games.get(0).getId(), winners.get(0).getId());
         Assertions.assertEquals(3, winners.get(0).getScore());
     }
-
     @Test
     void checkWinner2() {
         // given
@@ -86,6 +85,26 @@ class StopUtilsTest {
         Assertions.assertEquals(games.get(0).getId(), winners.get(0).getId());
         Assertions.assertEquals(2, winners.get(0).getScore());
         Assertions.assertEquals(2, winners.get(1).getScore());
+    }
+
+    @Test
+    void checkWinnerDraw2() {
+        // given
+        List<StopGame> games = new ArrayList<>();
+
+        games.add(this.buildGame("0", 0));
+        games.add(this.buildGame("1", 1));
+        games.add(this.buildGame("2", 2));
+
+        games.get(0).getWords()[0] = "Test1";
+        games.get(1).getWords()[0] = "Test1";
+
+        // when
+        List<StopGame> winners = StopUtils.checkWinner(games);
+
+        // then
+        Assertions.assertEquals(2, winners.size());
+        Assertions.assertEquals(2, winners.get(0).getScore());
     }
 
     private StopGame buildGame(String username, int position) {

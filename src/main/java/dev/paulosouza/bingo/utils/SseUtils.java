@@ -4,6 +4,7 @@ import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.request.GameType;
 import dev.paulosouza.bingo.dto.sse.GameTypeResponse;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopStoppedMessage;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.game.stop.StopGame;
@@ -94,6 +95,10 @@ public class SseUtils {
         emitters.forEach(SseUtils::sendStartedMessage);
     }
 
+    public static void broadcastStopStoppedMessage(List<SseEmitter> emitters, String playerName) {
+        emitters.forEach(emitter -> SseUtils.sendStoppedMessage(emitter, playerName));
+    }
+
     private static void sendKickMessage(SseEmitter emitter) {
         try {
             emitter.send(new KickResponse());
@@ -164,4 +169,12 @@ public class SseUtils {
         } catch (Exception ignored) {
         }
     }
+
+    private static void sendStoppedMessage(SseEmitter emitter, String playerName) {
+        try {
+            emitter.send(new StopStoppedMessage(playerName));
+        } catch (Exception ignored) {
+        }
+    }
+
 }

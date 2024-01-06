@@ -17,6 +17,6 @@ public class StartStopResponse {
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime endAt;
+    private LocalDateTime stopAt;
 
 }

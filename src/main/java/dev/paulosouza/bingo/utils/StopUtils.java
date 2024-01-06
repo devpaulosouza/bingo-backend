@@ -39,11 +39,18 @@ public class StopUtils {
                                 .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
                                 .map(g -> g.getWords()[finalI])
                                 .filter(Objects::nonNull)
+                                .map(String::toLowerCase)
                                 .map(s -> s.replaceAll("\\s", ""))
+                                .map(s -> s.replaceAll("[^\\p{ASCII}]", ""))
                                 .filter(game.getWords()[finalI]::equalsIgnoreCase)
                                 .count()
                 );
             }
+
+            if (game.getScore() < 0) {
+                game.setScore(0);
+            }
+
             log.info("game score. username = {} score = {}", game.getPlayer().getUsername(), game.getScore());
         });
 
