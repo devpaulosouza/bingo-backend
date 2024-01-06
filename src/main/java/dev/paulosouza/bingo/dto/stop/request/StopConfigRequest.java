@@ -13,4 +13,6 @@ public class StopConfigRequest {
 
     private Boolean kickWinner;
 
+    private Integer wordsCount;
+
 }

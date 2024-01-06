@@ -5,12 +5,16 @@ import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
+import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
+import dev.paulosouza.bingo.utils.ListUtils;
+import dev.paulosouza.bingo.utils.SseUtils;
 import dev.paulosouza.bingo.utils.StopUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -23,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class StopService {
 
-    private static final int WORDS_COUNT = 2;
+    public static final String PLAYER_WAS_NOT_FOUND = "Player was not found";
+    private int wordsCount = 7;
 
     private static final int CAN_STOP_SECONDS = 20;
 
@@ -32,6 +37,8 @@ public class StopService {
     private static final int INCREMENT_VALIDATE_WORD_SECONDS = 20;
 
     private List<StopGame> games = new ArrayList<>();
+
+    private List<SseEmitter> admins = new ArrayList<>();
 
     private final List<String> allowList = new ArrayList<>();
 
@@ -48,9 +55,9 @@ public class StopService {
 
     private String password = "sapa1";
 
-    private char letter;
+    private Character letter = null;
 
-    private Random random = new SecureRandom();
+    private final Random random = new SecureRandom();
 
     private ScheduledExecutorService schedulerCanStop;
 
@@ -60,7 +67,13 @@ public class StopService {
 
     private ScheduledExecutorService schedulerRestart;
 
+    private ScheduledExecutorService schedulerPing;
+
     private int validateWordCount = -1;
+
+    private List<String> possibleWords = new ArrayList<>();
+
+    private List<String> drawnWords = new ArrayList<>();
 
 
     public synchronized StopGame join(PlayerRequest request) {
@@ -84,7 +97,7 @@ public class StopService {
                 .position(this.games.stream().map(StopGame::getPosition).max(Integer::compare).map(i -> i + 1).orElse(0))
                 .build();
 
-        game.setWords(new String[WORDS_COUNT]);
+        game.setWords(new String[wordsCount]);
 
         this.games.add(game);
 
@@ -103,6 +116,25 @@ public class StopService {
         this.canStop = false;
         this.isStopped = false;
         this.validateWordCount = -1;
+        this.drawnWords.clear();
+
+        this.possibleWords.addAll(List.of(
+                "Programa de TV",
+                "Comida",
+                "Profissão",
+                "País",
+                "Animal",
+                "Personagem",
+                "Ator/Atriz",
+                "Esporte",
+                "Cor",
+                "App ou Site",
+                "Carro",
+                "Nome",
+                "Profissão"
+        ));
+
+        this.drawnWords();
 
         response.setCanStopAt(LocalDateTime.now().plusSeconds(CAN_STOP_SECONDS));
         response.setEndAt(LocalDateTime.now().plusSeconds(STOP_SECONDS));
@@ -123,7 +155,43 @@ public class StopService {
         this.schedulerCanStop.scheduleWithFixedDelay(this::setCanStop, CAN_STOP_SECONDS, CAN_STOP_SECONDS, TimeUnit.SECONDS);
         this.schedulerStop.scheduleWithFixedDelay(this::stop, STOP_SECONDS, STOP_SECONDS, TimeUnit.SECONDS);
 
+        this.notifyStart();
+
         return response;
+    }
+
+    public StopPlayerGameResponse getGame(UUID playerId) {
+        StopGame game = this.games.stream()
+                .filter(g -> g.getPlayer().getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
+
+        StopPlayerGameResponse response = new StopPlayerGameResponse();
+
+        response.setLetter(this.letter);
+        response.setWords(game.getWords());
+        response.setDrawnWords(this.drawnWords);
+
+        return response;
+    }
+
+    public SseEmitter addListener(UUID playerId, boolean isAdmin) {
+        SseEmitter emitter = new SseEmitter(0L);
+
+        if (isAdmin) {
+            this.admins.add(emitter);
+        } else {
+            Player player = this.games.stream()
+                    .filter(g -> g.getPlayer().getId().equals(playerId))
+                    .findFirst()
+                    .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND))
+                    .getPlayer();
+
+            player.setEmitter(emitter);
+        }
+        this.startPing();
+
+        return emitter;
     }
 
     public void setConfig(StopConfigRequest request) {
@@ -135,6 +203,9 @@ public class StopService {
         }
         if (request.getKickWinner() != null) {
             this.setKickWinner(request.getKickWinner());
+        }
+        if (request.getWordsCount() != null) {
+            this.wordsCount = request.getWordsCount();
         }
     }
 
@@ -161,7 +232,7 @@ public class StopService {
 
         StopGame game = this.games.stream().filter(g -> g.getPlayer().getId().equals(request.getPlayerId()))
                 .findFirst()
-                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
+                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
 
         int position = request.getPosition();
 
@@ -177,9 +248,18 @@ public class StopService {
 
         StopGame game = this.games.stream().filter(g -> g.getPlayer().getId().equals(request.getPlayerId()))
                 .findFirst()
-                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"));
+                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
 
         game.getWords()[request.getPosition()] = request.getWord();
+    }
+
+    private void startPing() {
+        if (this.schedulerPing != null) {
+            this.schedulerPing.shutdown();
+        }
+
+        this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
+        this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
     }
 
     private void validateSetWord(StopSetWordRequest request) {
@@ -238,7 +318,7 @@ public class StopService {
     }
 
     private void validateWordPosition(int position) {
-        if (position >= WORDS_COUNT) {
+        if (position >= wordsCount) {
             throw new UnprocessableEntityException("Invalid word position");
         }
     }
@@ -273,6 +353,12 @@ public class StopService {
         this.schedulerCanStop.shutdown();
     }
 
+    private void notifyStart() {
+        SseUtils.broadcastStartStopMessage(
+                SseUtils.mapStopEmitters(this.games, this.admins)
+        );
+    }
+
     private void notifyStopped(UUID playerId) {
 
     }
@@ -291,6 +377,19 @@ public class StopService {
 
     private void notifyRestart() {
 
+    }
+
+    private void notifyPing() {
+        SseUtils.broadcastPing(
+                SseUtils.mapStopEmitters(this.games, this.admins)
+        );
+    }
+
+    private void drawnWords() {
+        for (int i = 0; i < this.wordsCount; i++) {
+            String word = ListUtils.chooseWord(this.possibleWords);
+            this.drawnWords.add(word);
+        }
     }
 
     private void stop() {
@@ -316,7 +415,7 @@ public class StopService {
     private void incrementValidateWordCount() {
         this.validateWordCount++;
 
-        if (this.validateWordCount >= WORDS_COUNT) {
+        if (this.validateWordCount >= wordsCount) {
             this.schedulerValidateWord.shutdown();
             this.finish();
             return;
@@ -342,5 +441,4 @@ public class StopService {
 
 
     }
-
 }

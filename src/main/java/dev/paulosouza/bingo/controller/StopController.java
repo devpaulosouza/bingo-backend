@@ -5,11 +5,13 @@ import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
+import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import dev.paulosouza.bingo.game.stop.StopService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.UUID;
 
@@ -60,6 +62,21 @@ public class StopController {
         this.stopService.setConfig(request);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/{playerId}")
+    public ResponseEntity<StopPlayerGameResponse> setConfig(@PathVariable("playerId") UUID playerId) {
+        StopPlayerGameResponse response = this.stopService.getGame(playerId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value="/connect/players/{playerId}")
+    public SseEmitter connect(
+            @PathVariable("playerId") UUID playerId,
+            @RequestParam(value = "isAdmin", required = false) boolean isAdmin
+    ) {
+        return this.stopService.addListener(playerId, isAdmin);
     }
 
 }

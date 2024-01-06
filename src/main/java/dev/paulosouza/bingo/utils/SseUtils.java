@@ -6,6 +6,7 @@ import dev.paulosouza.bingo.dto.request.GameType;
 import dev.paulosouza.bingo.dto.sse.GameTypeResponse;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
 import dev.paulosouza.bingo.game.Player;
+import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,6 +25,17 @@ public class SseUtils {
                         cards
                                 .stream()
                                 .map(BingoCard::getPlayer)
+                                .map(Player::getEmitter),
+                        admins.stream()
+                )
+                .toList();
+    }
+
+    public static List<SseEmitter> mapStopEmitters(List<StopGame> games, List<SseEmitter> admins) {
+        return Stream.concat(
+                        games
+                                .stream()
+                                .map(StopGame::getPlayer)
                                 .map(Player::getEmitter),
                         admins.stream()
                 )
@@ -76,6 +88,10 @@ public class SseUtils {
 
     public static void broadcastGameType(List<SseEmitter> emitters, GameType type) {
         emitters.forEach(emitter -> SseUtils.sendGameTypeMessage(emitter, type));
+    }
+
+    public static void broadcastStartStopMessage(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendStartedMessage);
     }
 
     private static void sendKickMessage(SseEmitter emitter) {
@@ -148,5 +164,4 @@ public class SseUtils {
         } catch (Exception ignored) {
         }
     }
-
 }
