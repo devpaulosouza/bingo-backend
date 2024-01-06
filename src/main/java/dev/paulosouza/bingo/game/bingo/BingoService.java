@@ -384,7 +384,7 @@ public class BingoService {
     }
 
     private void validateMaximumPlayers() {
-        if (this.cards.size() >= 50) {
+        if (this.cards.size() >= 75) {
             throw new UnprocessableEntityException("Max players reached");
         }
     }
