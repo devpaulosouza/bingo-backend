@@ -298,6 +298,7 @@ public class StopService {
         this.notifyValidateWord(this.validateWordCount);
     }
 
+    @SuppressWarnings("java:S3358")
     private void finish() {
         int playersCount = this.games.size();
 
@@ -307,16 +308,17 @@ public class StopService {
             for (int i = 0; i < game.getWords().length; i++) {
                 int finalI = i;
 
-                int percentageValid = playersCount >= 10 ? 6 : (playersCount / 6 * 100);
-
-                game.setScore(game.getValidWords()[i] < percentageValid ? 0 : playersCount);
-
                 if (game.getWords()[finalI] == null) {
                     continue;
                 }
 
+                int percentageValid = playersCount >= 10 ? 6 : playersCount >= 3 ? 2 : 1;
+
+                game.setScore(game.getScore() + game.getValidWords()[i] < percentageValid ? 0 : playersCount);
+
                 game.setScore(
                         game.getScore() - games.stream()
+                                .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
                                 .map(g -> g.getWords()[finalI])
                                 .filter(Objects::nonNull)
                                 .map(s -> s.replaceAll("\\s", ""))
