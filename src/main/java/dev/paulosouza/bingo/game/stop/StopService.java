@@ -296,7 +296,9 @@ public class StopService {
     private void stop() {
         log.info("stopped");
         this.isStopped = true;
-        this.schedulerStop.shutdown();
+        if (this.schedulerStop != null) {
+            this.schedulerStop.shutdown();
+        }
     }
 
     private void restart() {
