@@ -311,12 +311,16 @@ public class StopService {
 
                 game.setScore(game.getValidWords()[i] < percentageValid ? 0 : playersCount);
 
+                if (game.getWords()[finalI] == null) {
+                    continue;
+                }
+
                 game.setScore(
                         game.getScore() - games.stream()
                                 .map(g -> g.getWords()[finalI])
                                 .filter(Objects::nonNull)
                                 .map(s -> s.replaceAll("\\s", ""))
-                                .filter(game.getWords()[i]::equalsIgnoreCase)
+                                .filter(game.getWords()[finalI]::equalsIgnoreCase)
                                 .count()
                 );
             }
