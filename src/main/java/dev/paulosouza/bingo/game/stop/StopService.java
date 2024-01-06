@@ -314,7 +314,7 @@ public class StopService {
 
                 int percentageValid = playersCount >= 10 ? 6 : playersCount >= 3 ? 2 : 1;
 
-                game.setScore(game.getScore() + game.getValidWords()[i] < percentageValid ? 0 : playersCount);
+                game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
 
                 game.setScore(
                         game.getScore() - games.stream()
