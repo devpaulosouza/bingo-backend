@@ -344,7 +344,7 @@ public class StopService {
 
         try {
             this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 30, TimeUnit.SECONDS);
+            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
         } catch (Exception ignored) {
 
         }
