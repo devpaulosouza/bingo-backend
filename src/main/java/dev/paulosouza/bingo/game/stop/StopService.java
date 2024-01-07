@@ -423,6 +423,7 @@ public class StopService {
 
     private void validateWord(String word) {
         if (
+                !word.isEmpty() &&
                 !word
                 .toUpperCase()
                 .replace("Ã", "A")
