@@ -5,6 +5,7 @@ import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
+import dev.paulosouza.bingo.dto.stop.response.StopGameResponse;
 import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import dev.paulosouza.bingo.game.stop.StopService;
@@ -69,6 +70,21 @@ public class StopController {
         StopPlayerGameResponse response = this.stopService.getGame(playerId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<StopGameResponse> getConfig() {
+        StopGameResponse response = this.stopService.getGame();
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("kick-all")
+    public ResponseEntity<Void> kickAll() {
+        this.stopService.kickAll();
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value="/connect/players/{playerId}")

@@ -2,6 +2,7 @@ package dev.paulosouza.bingo.game.stop;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
+import dev.paulosouza.bingo.dto.stop.response.StopGameResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
@@ -127,6 +128,8 @@ public class StopService {
 
         this.games.forEach(game -> game.setWords(new String[wordsCount]));
 
+        this.possibleWords.clear();
+
         this.possibleWords.addAll(List.of(
                 "Programa de TV",
                 "Comida",
@@ -200,6 +203,46 @@ public class StopService {
         if (this.validateWordCount != -1) {
             response.setValidateWordCount(this.validateWordCount);
         }
+
+        return response;
+    }
+
+    public void kickAll() {
+        this.notifyKickAll();
+
+        this.games.clear();
+        this.drawnWords.clear();
+
+        this.isAcceptingNewPlayers = true;
+        this.isGameRunning = false;
+
+
+        if (this.schedulerStop != null) {
+            this.schedulerStop.shutdown();
+        }
+
+        if (this.schedulerRestart != null) {
+            this.schedulerRestart.shutdown();
+        }
+
+        if (this.schedulerPing != null) {
+            this.schedulerPing.shutdown();
+        }
+
+        if (this.schedulerCanStop != null) {
+            this.schedulerCanStop.shutdown();
+        }
+
+        if (this.schedulerValidateWord != null) {
+            this.schedulerValidateWord.shutdown();
+        }
+    }
+
+    public StopGameResponse getGame() {
+        StopGameResponse response = new StopGameResponse();
+
+        response.setGames(this.games);
+        response.setWinners(this.winners);
 
         return response;
     }
@@ -358,7 +401,19 @@ public class StopService {
     }
 
     private void validateWord(String word) {
-        if (!word.startsWith(this.letter + "")) {
+        if (
+                !word
+                .toUpperCase()
+                .replace("Ã", "A")
+                .replace("Õ", "O")
+                .replace("Ç", "C")
+                .replace("Á", "A")
+                .replace("Ó", "O")
+                .replace("Ê", "E")
+                .replace("É", "E")
+                .replace("Ú", "U")
+                .startsWith(this.letter + "")
+        ) {
             throw new UnprocessableEntityException("Word must start with the drawn letter");
         }
     }
@@ -400,6 +455,12 @@ public class StopService {
         );
     }
 
+    private void notifyKickAll() {
+        SseUtils.broadcastKickAll(
+                SseUtils.mapStopEmitters(this.games, this.admins)
+        );
+    }
+
     private void notifyValidateWord(int validateWordCount) {
         SseUtils.broadcastValidateWord(
                 SseUtils.mapStopEmitters(this.games, this.admins),
@@ -408,11 +469,16 @@ public class StopService {
     }
 
     private void notifyWinner(Player player) {
-
+        SseUtils.broadcastWinner(
+                SseUtils.mapStopEmitters(this.games, this.admins),
+                player
+        );
     }
 
     private void notifyRestart() {
-
+        SseUtils.broadcastStopRestart(
+                SseUtils.mapStopEmitters(this.games, this.admins)
+        );
     }
 
     private void notifyPing() {
@@ -472,19 +538,19 @@ public class StopService {
     }
 
     private void finish() {
-        List<StopGame> winners = StopUtils.checkWinner(this.games);
+        List<StopGame> winnerList = StopUtils.checkWinner(this.games);
 
-        log.info("Winners size = {}", winners.size());
+        log.info("Winners size = {}", winnerList.size());
 
-        if (winners.size() == 1) {
-            this.notifyWinner(winners.get(0).getPlayer());
-            winners.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
+        if (winnerList.size() == 1) {
+            this.notifyWinner(winnerList.get(0).getPlayer());
+            winnerList.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
+            this.winners.addAll(winnerList.stream().map(StopGame::getPlayer).toList());
         } else {
-            this.games.removeIf(game -> !winners.contains(game));
+            this.games.removeIf(game -> !winnerList.contains(game));
             this.restart();
-            winners.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
+            winnerList.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
         }
 
-        this.winners.addAll(winners.stream().map(StopGame::getPlayer).toList());
     }
 }

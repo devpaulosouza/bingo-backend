@@ -4,6 +4,7 @@ import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.request.GameType;
 import dev.paulosouza.bingo.dto.sse.GameTypeResponse;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopRestartMessage;
 import dev.paulosouza.bingo.dto.stop.sse.response.StopStoppedMessage;
 import dev.paulosouza.bingo.dto.stop.sse.response.StopValidateWordMessage;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
@@ -104,6 +105,10 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendStopValidateWordMessage(emitter, validateWordCount));
     }
 
+    public static void broadcastStopRestart(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendStopRestartMessage);
+    }
+
     private static void sendKickMessage(SseEmitter emitter) {
         try {
             emitter.send(new KickResponse());
@@ -185,6 +190,13 @@ public class SseUtils {
     private static void sendStopValidateWordMessage(SseEmitter emitter, int count) {
         try {
             emitter.send(new StopValidateWordMessage(count));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendStopRestartMessage(SseEmitter emitter) {
+        try {
+            emitter.send(new StopRestartMessage());
         } catch (Exception ignored) {
         }
     }
