@@ -340,8 +340,12 @@ public class StopService {
             this.schedulerPing.shutdown();
         }
 
-        this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-        this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
+        try {
+            this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
+            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 30, TimeUnit.SECONDS);
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void validateSetWord(StopSetWordRequest request) {
