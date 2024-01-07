@@ -31,7 +31,7 @@ public class StopService {
     public static final String PLAYER_WAS_NOT_FOUND = "Player was not found";
     private int wordsCount = 7;
 
-    private static final int CAN_STOP_SECONDS = 20;
+    private static final int CAN_STOP_SECONDS = 30;
 
     private static final int STOP_SECONDS = 90;
 
@@ -176,6 +176,7 @@ public class StopService {
         this.stopAt = LocalDateTime.now().plusSeconds(STOP_SECONDS);
 
         this.notifyStart();
+        this.startPing();
 
         return response;
     }
@@ -344,7 +345,7 @@ public class StopService {
 
         try {
             this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
+            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, CAN_STOP_SECONDS, TimeUnit.SECONDS);
         } catch (Exception ignored) {
 
         }
