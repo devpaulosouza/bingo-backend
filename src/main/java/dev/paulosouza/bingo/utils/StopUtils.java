@@ -31,7 +31,7 @@ public class StopUtils {
                     continue;
                 }
 
-                int percentageValid = playersCount >= 10 ? 6 : 9;
+                int percentageValid = playersCount >= 10 ? 6 : 8;
 
                 game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
 
