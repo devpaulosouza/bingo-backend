@@ -136,7 +136,7 @@ public class StopService {
                 "Programa de TV",
                 "Comida",
                 "Profissão",
-                "País",
+                "CEP (Cidade, Estado, País)",
                 "Animal",
                 "Personagem",
                 "Famosas/Famosos",

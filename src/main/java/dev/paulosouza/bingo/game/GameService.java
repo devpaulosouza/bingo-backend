@@ -20,7 +20,7 @@ public class GameService {
 
     private ScheduledExecutorService pingScheduler;
 
-    private GameType type = GameType.BINGO;
+    private GameType type = GameType.STOP;
 
     public SseEmitter addListener() {
         SseEmitter emitter = new SseEmitter(0L);
