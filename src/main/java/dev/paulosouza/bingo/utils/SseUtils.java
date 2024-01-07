@@ -2,8 +2,14 @@ package dev.paulosouza.bingo.utils;
 
 import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
+import dev.paulosouza.bingo.dto.request.GameType;
+import dev.paulosouza.bingo.dto.sse.GameTypeResponse;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopRestartMessage;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopStoppedMessage;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopValidateWordMessage;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
 import dev.paulosouza.bingo.game.Player;
+import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -22,6 +28,17 @@ public class SseUtils {
                         cards
                                 .stream()
                                 .map(BingoCard::getPlayer)
+                                .map(Player::getEmitter),
+                        admins.stream()
+                )
+                .toList();
+    }
+
+    public static List<SseEmitter> mapStopEmitters(List<StopGame> games, List<SseEmitter> admins) {
+        return Stream.concat(
+                        games
+                                .stream()
+                                .map(StopGame::getPlayer)
                                 .map(Player::getEmitter),
                         admins.stream()
                 )
@@ -72,6 +89,26 @@ public class SseUtils {
         emitters.forEach(SseUtils::sendPingMessage);
     }
 
+    public static void broadcastGameType(List<SseEmitter> emitters, GameType type) {
+        emitters.forEach(emitter -> SseUtils.sendGameTypeMessage(emitter, type));
+    }
+
+    public static void broadcastStartStopMessage(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendStartedMessage);
+    }
+
+    public static void broadcastStopStoppedMessage(List<SseEmitter> emitters, String playerName) {
+        emitters.forEach(emitter -> SseUtils.sendStoppedMessage(emitter, playerName));
+    }
+
+    public static void broadcastValidateWord(List<SseEmitter> emitters, int validateWordCount) {
+        emitters.forEach(emitter -> SseUtils.sendStopValidateWordMessage(emitter, validateWordCount));
+    }
+
+    public static void broadcastStopRestart(List<SseEmitter> emitters) {
+        emitters.forEach(SseUtils::sendStopRestartMessage);
+    }
+
     private static void sendKickMessage(SseEmitter emitter) {
         try {
             emitter.send(new KickResponse());
@@ -83,64 +120,84 @@ public class SseUtils {
     private static void sendStartedMessage(SseEmitter emitter) {
         try {
             emitter.send(new StartedResponse(true));
-        } catch (Exception e) {
-            log.error("Error sending start message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendDrawnNumberMessage(SseEmitter emitter, DrawnNumberResponse response) {
         try {
             emitter.send(response);
-        } catch (Exception e) {
-            log.error("Error sending drawn number message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendWinnerMessage(SseEmitter emitter, Player player) {
         try {
             emitter.send(new WinnerResponse(player.getId(), player.getName()));
-        } catch (Exception e) {
-            log.error("Error sending winner message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendCleanMessage(SseEmitter emitter) {
         try {
             emitter.send(new CleanResponse());
-        } catch (Exception e) {
-            log.error("Error sending clean message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendMarkedMessage(SseEmitter emitter, MarkedResponse response) {
         try {
             emitter.send(response);
-        } catch (Exception e) {
-            log.error("Error sending marked message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendJoinMessage(SseEmitter emitter, BingoCard card) {
         try {
             emitter.send(card);
-        } catch (Exception e) {
-            log.error("Error sending join message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendGameModeMessage(SseEmitter emitter, BingoMode mode) {
         try {
             emitter.send(new GameModeResponse(mode));
-        } catch (Exception e) {
-            log.error("Error sending game mode message: {}", e.getMessage());
+        } catch (Exception ignored) {
         }
     }
 
     private static void sendPingMessage(SseEmitter emitter) {
         try {
             emitter.send(new PingResponse());
-        } catch (Exception e) {
-            log.error("Error sending ping message: {}", e.getMessage());
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendGameTypeMessage(SseEmitter emitter, GameType type) {
+        try {
+            emitter.send(new GameTypeResponse(type));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendStoppedMessage(SseEmitter emitter, String playerName) {
+        try {
+            emitter.send(new StopStoppedMessage(playerName));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendStopValidateWordMessage(SseEmitter emitter, int count) {
+        try {
+            emitter.send(new StopValidateWordMessage(count));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendStopRestartMessage(SseEmitter emitter) {
+        try {
+            emitter.send(new StopRestartMessage());
+        } catch (Exception ignored) {
         }
     }
 

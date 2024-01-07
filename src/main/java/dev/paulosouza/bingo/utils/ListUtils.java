@@ -24,4 +24,8 @@ public class ListUtils {
         return possibleNumbers.remove(ListUtils.random.nextInt(possibleNumbers.size()));
     }
 
+    public static String chooseWord(List<String> possibleNumbers) {
+        return possibleNumbers.remove(ListUtils.random.nextInt(possibleNumbers.size()));
+    }
+
 }

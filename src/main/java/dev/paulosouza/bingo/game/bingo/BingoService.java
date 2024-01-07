@@ -185,8 +185,8 @@ public class BingoService {
         }
     }
 
-    public GameResponse getGame(UUID playerId) {
-        GameResponse response = new GameResponse();
+    public BingoGameResponse getGame(UUID playerId) {
+        BingoGameResponse response = new BingoGameResponse();
 
         BingoCard card = this.cards.stream()
                 .filter(c -> c.getPlayer().getId().equals(playerId))
