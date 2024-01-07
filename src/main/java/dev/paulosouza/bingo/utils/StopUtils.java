@@ -1,5 +1,6 @@
 package dev.paulosouza.bingo.utils;
 
+import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +31,7 @@ public class StopUtils {
                     continue;
                 }
 
-                int percentageValid = playersCount >= 10 ? 6 : playersCount >= 3 ? 8 : 9;
+                int percentageValid = playersCount >= 10 ? 6 : 9;
 
                 game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
 
@@ -62,6 +63,42 @@ public class StopUtils {
                 ))
                 .lastEntry()
                 .getValue();
+    }
+
+
+    public static void setOtherPLayersWordsResponse(
+            StopGame game,
+            int validateWordCount,
+            List<StopGame> games,
+            StopPlayerGameResponse response
+    ) {
+        int max = Math.min(10, games.size());
+
+        if (validateWordCount != -1) {
+            response.setOtherPlayersPosition(
+                    games.stream()
+                            .filter(g -> (g.getPosition() < max + game.getPosition()) && (g.getPosition() > game.getPosition()))
+                            .map(StopGame::getPosition)
+                            .toList()
+            );
+
+            if (response.getOtherPlayersPosition().size() < 10) {
+                response.setOtherPlayersPosition(
+                        games.stream()
+                                .map(StopGame::getPosition)
+                                .toList()
+                );
+            }
+
+            response.setOtherPlayersWords(
+                    games.stream()
+                            .filter(g -> response.getOtherPlayersPosition().contains(g.getPosition()))
+                            .map(StopGame::getWords)
+                            .map(words -> words[validateWordCount])
+                            .limit(max)
+                            .toList()
+            );
+        }
     }
 
 }

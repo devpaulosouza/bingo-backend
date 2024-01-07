@@ -5,6 +5,7 @@ import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.request.GameType;
 import dev.paulosouza.bingo.dto.sse.GameTypeResponse;
 import dev.paulosouza.bingo.dto.stop.sse.response.StopStoppedMessage;
+import dev.paulosouza.bingo.dto.stop.sse.response.StopValidateWordMessage;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.game.stop.StopGame;
@@ -99,6 +100,10 @@ public class SseUtils {
         emitters.forEach(emitter -> SseUtils.sendStoppedMessage(emitter, playerName));
     }
 
+    public static void broadcastValidateWord(List<SseEmitter> emitters, int validateWordCount) {
+        emitters.forEach(emitter -> SseUtils.sendStopValidateWordMessage(emitter, validateWordCount));
+    }
+
     private static void sendKickMessage(SseEmitter emitter) {
         try {
             emitter.send(new KickResponse());
@@ -173,6 +178,13 @@ public class SseUtils {
     private static void sendStoppedMessage(SseEmitter emitter, String playerName) {
         try {
             emitter.send(new StopStoppedMessage(playerName));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void sendStopValidateWordMessage(SseEmitter emitter, int count) {
+        try {
+            emitter.send(new StopValidateWordMessage(count));
         } catch (Exception ignored) {
         }
     }

@@ -65,7 +65,7 @@ public class StopController {
     }
 
     @GetMapping("/users/{playerId}")
-    public ResponseEntity<StopPlayerGameResponse> setConfig(@PathVariable("playerId") UUID playerId) {
+    public ResponseEntity<StopPlayerGameResponse> getConfig(@PathVariable("playerId") UUID playerId) {
         StopPlayerGameResponse response = this.stopService.getGame(playerId);
 
         return ResponseEntity.ok(response);

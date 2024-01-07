@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.dto.stop.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import dev.paulosouza.bingo.game.Player;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -25,5 +26,12 @@ public class StopPlayerGameResponse {
 
     private boolean isStopped;
 
+    private Integer validateWordCount;
+
+    private List<String> otherPlayersWords;
+
+    private List<Integer> otherPlayersPosition;
+
+    private List<Player> winners;
 
 }

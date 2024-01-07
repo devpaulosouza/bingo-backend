@@ -36,9 +36,9 @@ public class StopService {
 
     private static final int INCREMENT_VALIDATE_WORD_SECONDS = 20;
 
-    private List<StopGame> games = new ArrayList<>();
+    private final List<StopGame> games = new ArrayList<>();
 
-    private List<SseEmitter> admins = new ArrayList<>();
+    private final List<SseEmitter> admins = new ArrayList<>();
 
     private final List<String> allowList = new ArrayList<>();
 
@@ -75,9 +75,11 @@ public class StopService {
 
     private int validateWordCount = -1;
 
-    private List<String> possibleWords = new ArrayList<>();
+    private final List<String> possibleWords = new ArrayList<>();
 
-    private List<String> drawnWords = new ArrayList<>();
+    private final List<String> drawnWords = new ArrayList<>();
+
+    private final List<Player> winners = new ArrayList<>();
 
 
     public synchronized StopGame join(PlayerRequest request) {
@@ -121,6 +123,7 @@ public class StopService {
         this.isStopped = false;
         this.validateWordCount = -1;
         this.drawnWords.clear();
+        this.winners.clear();
 
         this.games.forEach(game -> game.setWords(new String[wordsCount]));
 
@@ -164,6 +167,9 @@ public class StopService {
         this.schedulerCanStop.scheduleWithFixedDelay(this::setCanStop, CAN_STOP_SECONDS, CAN_STOP_SECONDS, TimeUnit.SECONDS);
         this.schedulerStop.scheduleWithFixedDelay(this::stop, STOP_SECONDS, STOP_SECONDS, TimeUnit.SECONDS);
 
+        this.canStopAt = LocalDateTime.now().plusSeconds(CAN_STOP_SECONDS);
+        this.stopAt = LocalDateTime.now().plusSeconds(STOP_SECONDS);
+
         this.notifyStart();
 
         return response;
@@ -182,8 +188,18 @@ public class StopService {
         response.setDrawnWords(this.drawnWords);
         response.setCanStopAt(this.canStopAt);
         response.setStopAt(this.stopAt);
-        response.setCanStop(this.canStopAt.isBefore(LocalDateTime.now()));
         response.setStopped(this.isStopped);
+
+        int count = this.validateWordCount >= game.getWords().length ? game.getWords().length - 1 : this.validateWordCount;
+        StopUtils.setOtherPLayersWordsResponse(game, count, this.games, response);
+
+        if (this.canStopAt != null) {
+            response.setCanStop(this.canStopAt.isBefore(LocalDateTime.now()));
+        }
+
+        if (this.validateWordCount != -1) {
+            response.setValidateWordCount(this.validateWordCount);
+        }
 
         return response;
     }
@@ -223,35 +239,32 @@ public class StopService {
     }
 
     public synchronized void stop(UUID playerId) {
+        String playerName = null;
 
-        Player player = this.games
+        Optional<Player> optionalPlayer = this.games
                 .stream()
                 .map(StopGame::getPlayer)
                 .filter(p -> p.getId().equals(playerId))
-                .findFirst()
-                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
+                .findFirst();
 
-        log.info("stopped by = {}", player.getUsername());
+        if (optionalPlayer.isPresent()) {
+            Player player = optionalPlayer.get();
+            playerName = player.getName();
+            log.info("stopped by = {}", player.getUsername());
+        }
 
         this.validateGameIsRunning();
         this.validateIsNotStopped();
         this.stop();
 
-        if (this.schedulerValidateWord != null) {
-            this.schedulerValidateWord.shutdown();
-        }
-
-        this.schedulerValidateWord = Executors.newSingleThreadScheduledExecutor();
-        this.schedulerValidateWord.scheduleWithFixedDelay(this::incrementValidateWordCount, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
-
-        this.notifyStopped(player.getName());
+        this.notifyStopped(playerName);
     }
 
     public synchronized void setValidWord(StopValidateWordRequest request) {
         this.validateGameIsRunning();
         this.validateIsStopped();
 
-        StopGame game = this.games.stream().filter(g -> g.getPlayer().getId().equals(request.getPlayerId()))
+        StopGame game = this.games.stream().filter(g -> g.getPosition() == request.getPlayerPosition())
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
 
@@ -387,12 +400,11 @@ public class StopService {
         );
     }
 
-    private void notifyStopped() {
-
-    }
-
     private void notifyValidateWord(int validateWordCount) {
-
+        SseUtils.broadcastValidateWord(
+                SseUtils.mapStopEmitters(this.games, this.admins),
+                validateWordCount
+        );
     }
 
     private void notifyWinner(Player player) {
@@ -420,9 +432,18 @@ public class StopService {
     private void stop() {
         log.info("stopped");
         this.isStopped = true;
+
+        if (this.schedulerValidateWord != null) {
+            this.schedulerValidateWord.shutdown();
+        }
         if (this.schedulerStop != null) {
             this.schedulerStop.shutdown();
         }
+
+        this.schedulerValidateWord = Executors.newSingleThreadScheduledExecutor();
+        this.schedulerValidateWord.scheduleWithFixedDelay(this::incrementValidateWordCount, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
+
+        this.notifyStopped(null);
     }
 
     private void restart() {
@@ -464,6 +485,6 @@ public class StopService {
             winners.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
         }
 
-
+        this.winners.addAll(winners.stream().map(StopGame::getPlayer).toList());
     }
 }
