@@ -289,17 +289,23 @@ public class StopService {
         }
     }
 
-    public synchronized void stop(UUID playerId) {
+    public synchronized boolean stop(UUID playerId) {
         String playerName = null;
 
-        Optional<Player> optionalPlayer = this.games
+        Optional<StopGame> optionalGame = this.games
                 .stream()
-                .map(StopGame::getPlayer)
-                .filter(p -> p.getId().equals(playerId))
+                .filter(game -> game.getPlayer().getId().equals(playerId))
                 .findFirst();
 
-        if (optionalPlayer.isPresent()) {
-            Player player = optionalPlayer.get();
+        if (optionalGame.isPresent()) {
+            StopGame game = optionalGame.get();
+
+            if (Arrays.stream(game.getWords()).anyMatch(Objects::isNull)) {
+                return false;
+            }
+
+            Player player = game.getPlayer();
+
             playerName = player.getName();
             log.info("stopped by = {}", player.getUsername());
         }
@@ -309,6 +315,8 @@ public class StopService {
         this.stop();
 
         this.notifyStopped(playerName);
+
+        return true;
     }
 
     public synchronized void setValidWord(StopValidateWordRequest request) {
