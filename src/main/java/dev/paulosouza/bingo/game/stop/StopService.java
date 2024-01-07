@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -269,7 +270,6 @@ public class StopService {
 
             player.setEmitter(emitter);
         }
-        this.startPing();
 
         return emitter;
     }
@@ -346,6 +346,7 @@ public class StopService {
         try {
             this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
             this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, CAN_STOP_SECONDS, CAN_STOP_SECONDS, TimeUnit.SECONDS);
+            log.info("time {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         } catch (Exception ignored) {
 
         }
@@ -494,6 +495,7 @@ public class StopService {
     }
 
     private void notifyPing() {
+        log.info("time {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         SseUtils.broadcastPing(
                 SseUtils.mapStopEmitters(this.games, this.admins)
         );
