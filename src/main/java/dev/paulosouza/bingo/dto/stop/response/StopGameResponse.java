@@ -13,4 +13,8 @@ public class StopGameResponse {
 
     private List<Player> winners;
 
+    private List<String> drawnWords;
+
+    private Character letter;
+
 }

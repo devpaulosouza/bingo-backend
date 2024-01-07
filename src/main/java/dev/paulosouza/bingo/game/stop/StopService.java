@@ -243,6 +243,8 @@ public class StopService {
 
         response.setGames(this.games);
         response.setWinners(this.winners);
+        response.setDrawnWords(this.drawnWords);
+        response.setLetter(this.letter);
 
         return response;
     }
