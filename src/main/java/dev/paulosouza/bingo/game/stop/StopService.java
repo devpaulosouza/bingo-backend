@@ -219,6 +219,8 @@ public class StopService {
         this.isAcceptingNewPlayers = true;
         this.isGameRunning = false;
 
+        this.letter = null;
+
 
         if (this.schedulerStop != null) {
             this.schedulerStop.shutdown();
