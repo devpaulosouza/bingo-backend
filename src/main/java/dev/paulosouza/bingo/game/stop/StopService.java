@@ -82,6 +82,7 @@ public class StopService {
 
     private final List<Player> winners = new ArrayList<>();
 
+    private boolean validatingWords = false;
 
     public synchronized StopGame join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
@@ -125,6 +126,7 @@ public class StopService {
         this.validateWordCount = -1;
         this.drawnWords.clear();
         this.winners.clear();
+        this.validatingWords = false;
 
         this.games.forEach(game -> game.setWords(new String[wordsCount]));
 
@@ -192,6 +194,7 @@ public class StopService {
         response.setCanStopAt(this.canStopAt);
         response.setStopAt(this.stopAt);
         response.setStopped(this.isStopped);
+        response.setValidatingWords(this.validatingWords);
 
         int count = this.validateWordCount >= game.getWords().length ? game.getWords().length - 1 : this.validateWordCount;
         StopUtils.setOtherPLayersWordsResponse(game, count, this.games, response);
@@ -527,6 +530,7 @@ public class StopService {
     }
 
     private void incrementValidateWordCount() {
+        this.validatingWords = true;
         this.validateWordCount++;
 
         if (this.validateWordCount >= wordsCount) {

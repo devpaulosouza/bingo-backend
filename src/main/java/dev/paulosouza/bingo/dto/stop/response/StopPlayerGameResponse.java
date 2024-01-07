@@ -26,6 +26,8 @@ public class StopPlayerGameResponse {
 
     private boolean isStopped;
 
+    private boolean validatingWords;
+
     private Integer validateWordCount;
 
     private List<String> otherPlayersWords;
