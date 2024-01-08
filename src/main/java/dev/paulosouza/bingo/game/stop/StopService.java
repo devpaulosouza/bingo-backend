@@ -540,6 +540,11 @@ public class StopService {
             this.schedulerRestart.shutdown();
         }
 
+        this.games.forEach(g -> {
+            g.setWords(new String[wordsCount]);
+            g.setScore(0);
+        });
+
         this.notifyRestart();
 
         this.schedulerRestart = Executors.newSingleThreadScheduledExecutor();
