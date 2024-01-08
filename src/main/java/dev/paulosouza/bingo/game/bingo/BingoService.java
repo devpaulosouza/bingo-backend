@@ -388,7 +388,7 @@ public class BingoService {
     }
 
     private void validatePassword(String password) {
-        if (this.hasPassword && !this.password.equals(password)) {
+        if (this.hasPassword && !this.password.equalsIgnoreCase(password)) {
             throw new UnprocessableEntityException("Password does not match");
         }
     }
