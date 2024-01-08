@@ -539,6 +539,9 @@ public class StopService {
         if (this.schedulerRestart != null) {
             this.schedulerRestart.shutdown();
         }
+        if (this.schedulerRestart != null) {
+            this.schedulerPing.shutdown();
+        }
 
         this.games.forEach(g -> {
             g.setWords(new String[wordsCount]);
@@ -548,6 +551,7 @@ public class StopService {
         this.notifyRestart();
 
         this.schedulerRestart = Executors.newSingleThreadScheduledExecutor();
+        this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
         this.schedulerRestart.scheduleWithFixedDelay(this::start, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
 
     }
