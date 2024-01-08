@@ -379,7 +379,7 @@ public class StopService {
     }
 
     private void validateMaximumPlayers() {
-        if (this.games.size() >= 50) {
+        if (this.games.size() >= 75) {
             throw new UnprocessableEntityException("Max players reached");
         }
     }
