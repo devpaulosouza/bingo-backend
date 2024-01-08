@@ -278,15 +278,13 @@ public class StopService {
         if (request.getAllowList() != null) {
             this.setAllowList(request.getAllowList());
         }
-        if (request.getPassword() != null) {
-            this.setPassword(request.getPassword());
-        }
         if (request.getKickWinner() != null) {
             this.setKickWinner(request.getKickWinner());
         }
         if (request.getWordsCount() != null) {
             this.wordsCount = request.getWordsCount();
         }
+        this.setPassword(request.getPassword());
     }
 
     public synchronized boolean stop(UUID playerId) {
