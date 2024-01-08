@@ -36,7 +36,7 @@ public class StopService {
 
     private static final int STOP_SECONDS = 90;
 
-    private static final int INCREMENT_VALIDATE_WORD_SECONDS = 20;
+    private static final int INCREMENT_VALIDATE_WORD_SECONDS = 10;
 
     private final List<StopGame> games = new ArrayList<>();
 

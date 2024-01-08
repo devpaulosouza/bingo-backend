@@ -34,9 +34,9 @@ public class StopUtils {
                     continue;
                 }
 
-                int percentageValid = playersCount >= 10 ? 6 : 8;
+                int percentageValid = playersCount >= 10 ? 6 : 9;
 
-                game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
+                game.setScore(game.getScore() + (game.getValidWords()[i] <= percentageValid ? 0 : playersCount));
 
                 long minusScore = games.stream()
                         .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
@@ -54,7 +54,7 @@ public class StopUtils {
                 );
 
                 for (int j = 0; j < game.getWords().length; j++) {
-                    long newScore = game.getValidWords()[i] < percentageValid ? 0 : playersCount;
+                    long newScore = game.getValidWords()[i] <= percentageValid ? 0 : playersCount;
 
                     if (StringUtils.isEmpty(game.getWords()[j])) {
                         newScore = 0;
