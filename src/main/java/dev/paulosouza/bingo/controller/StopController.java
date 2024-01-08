@@ -45,8 +45,8 @@ public class StopController {
     }
 
     @PostMapping("/users/{playerId}/validate-word")
-    public ResponseEntity<Void> validateWord(@RequestBody StopValidateWordRequest request) {
-        this.stopService.setValidWord(request);
+    public ResponseEntity<Void> validateWord(@PathVariable("playerId") UUID playerId, @RequestBody StopValidateWordRequest request) {
+        this.stopService.setValidWord(playerId, request);
 
         return ResponseEntity.noContent().build();
     }

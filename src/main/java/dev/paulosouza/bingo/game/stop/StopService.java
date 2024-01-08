@@ -319,13 +319,17 @@ public class StopService {
         return true;
     }
 
-    public synchronized void setValidWord(StopValidateWordRequest request) {
+    public synchronized void setValidWord(UUID playerId, StopValidateWordRequest request) {
         this.validateGameIsRunning();
         this.validateIsStopped();
 
         StopGame game = this.games.stream().filter(g -> g.getPosition() == request.getPlayerPosition())
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
+        Player player = this.games.stream().filter(g -> g.getPosition() == request.getPlayerPosition())
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND))
+                .getPlayer();
 
         int position = request.getPosition();
 
@@ -333,6 +337,7 @@ public class StopService {
             game.getValidWords()[position] = Math.min(10, game.getValidWords()[position] + 1);
         } else {
             game.getValidWords()[position] = Math.max(0, game.getValidWords()[position] - 1);
+            log.info("Player = {} set word = {} invalid", player.getUsername(), game.getWords()[position]);
         }
     }
 
