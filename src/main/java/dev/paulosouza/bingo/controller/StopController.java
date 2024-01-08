@@ -38,10 +38,10 @@ public class StopController {
     }
 
     @PostMapping("/users/{playerId}/stop")
-    public ResponseEntity<Void> stop(@PathVariable("playerId") UUID playerId) {
-        this.stopService.stop(playerId);
+    public ResponseEntity<Boolean> stop(@PathVariable("playerId") UUID playerId) {
+        boolean stop = this.stopService.stop(playerId);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(stop);
     }
 
     @PostMapping("/users/{playerId}/validate-word")
