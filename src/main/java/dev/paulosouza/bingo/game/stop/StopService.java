@@ -353,7 +353,7 @@ public class StopService {
 
         try {
             this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, CAN_STOP_SECONDS, CAN_STOP_SECONDS, TimeUnit.SECONDS);
+            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
             log.info("time {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         } catch (Exception ignored) {
 
@@ -542,11 +542,6 @@ public class StopService {
         if (this.schedulerRestart != null) {
             this.schedulerPing.shutdown();
         }
-
-        this.games.forEach(g -> {
-            g.setWords(new String[wordsCount]);
-            g.setScore(0);
-        });
 
         this.notifyRestart();
 

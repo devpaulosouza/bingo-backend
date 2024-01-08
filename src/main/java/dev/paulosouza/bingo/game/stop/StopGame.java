@@ -27,6 +27,8 @@ public class StopGame {
 
     private long score;
 
+    private long[] scores;
+
     public void setWords(String[] words) {
         this.words = words;
         this.validWords = new int[10];

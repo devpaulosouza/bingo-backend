@@ -3,6 +3,7 @@ package dev.paulosouza.bingo.utils;
 import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +28,8 @@ public class StopUtils {
             for (int i = 0; i < game.getWords().length; i++) {
                 int finalI = i;
 
+                game.setScores(new long[game.getWords().length]);
+
                 if (game.getWords()[finalI] == null) {
                     continue;
                 }
@@ -35,17 +38,31 @@ public class StopUtils {
 
                 game.setScore(game.getScore() + (game.getValidWords()[i] < percentageValid ? 0 : playersCount));
 
+                long minusScore = games.stream()
+                        .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
+                        .map(g -> g.getWords()[finalI])
+                        .filter(Objects::nonNull)
+                        .filter(w -> !w.isEmpty())
+                        .map(String::toLowerCase)
+                        .map(s -> s.replaceAll("\\s", ""))
+                        .map(s -> s.replaceAll("[^\\p{ASCII}]", ""))
+                        .filter(game.getWords()[finalI]::equalsIgnoreCase)
+                        .count();
+
                 game.setScore(
-                        game.getScore() - games.stream()
-                                .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
-                                .map(g -> g.getWords()[finalI])
-                                .filter(Objects::nonNull)
-                                .map(String::toLowerCase)
-                                .map(s -> s.replaceAll("\\s", ""))
-                                .map(s -> s.replaceAll("[^\\p{ASCII}]", ""))
-                                .filter(game.getWords()[finalI]::equalsIgnoreCase)
-                                .count()
+                        game.getScore() - minusScore
                 );
+
+                for (int j = 0; j < game.getWords().length; j++) {
+                    long newScore = game.getValidWords()[i] < percentageValid ? 0 : playersCount;
+
+                    if (StringUtils.isEmpty(game.getWords()[j])) {
+                        newScore = 0;
+                    }
+
+                    game.getScores()[j] = newScore - minusScore;
+                }
+
             }
 
             if (game.getScore() < 0) {
