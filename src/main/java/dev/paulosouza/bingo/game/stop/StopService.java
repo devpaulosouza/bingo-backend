@@ -248,6 +248,8 @@ public class StopService {
     public StopGameResponse getGame() {
         StopGameResponse response = new StopGameResponse();
 
+        StopUtils.checkWinner(this.games);
+
         response.setGames(this.games);
         response.setWinners(this.winners);
         response.setDrawnWords(this.drawnWords);
