@@ -41,6 +41,7 @@ public class StopUtils {
                         .map(g -> g.getWords()[finalI])
                         .filter(Objects::nonNull)
                         .filter(w -> !w.isEmpty())
+                        .filter(w -> w.length() != 1)
                         .map(String::toLowerCase)
                         .map(s -> s.replaceAll("\\s", ""))
                         .map(s -> s.replaceAll("[^\\p{ASCII}]", ""))
