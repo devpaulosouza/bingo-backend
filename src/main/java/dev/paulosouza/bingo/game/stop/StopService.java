@@ -554,7 +554,7 @@ public class StopService {
 
         this.schedulerRestart = Executors.newSingleThreadScheduledExecutor();
         this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-        this.schedulerRestart.scheduleWithFixedDelay(this::start, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
+        this.schedulerRestart.scheduleWithFixedDelay(this::start, INCREMENT_VALIDATE_WORD_SECONDS * 2L, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
 
     }
 
