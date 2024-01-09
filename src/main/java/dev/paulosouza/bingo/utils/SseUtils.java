@@ -56,7 +56,13 @@ public class SseUtils {
     }
 
     public static void broadcast(List<SseEmitter> emitters, Object message) {
-        emitters.forEach(emitter -> SseUtils.sendMessage(emitter, message));
+        for (SseEmitter emitter: emitters) {
+            try {
+                SseUtils.sendMessage(emitter, message);
+            } catch (Exception ignored) {
+
+            }
+        }
     }
 
     private static void sendMessage(SseEmitter emitter, Object object) {

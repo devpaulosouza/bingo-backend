@@ -126,7 +126,11 @@ public class BingoService {
 
         this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
 
-        SseUtils.broadcast(SseUtils.mapEmitters(this.cards, this.admins), new StartedResponse(true));
+        try {
+            SseUtils.broadcast(SseUtils.mapEmitters(this.cards, this.admins), new StartedResponse(true));
+        } catch (Exception ignored) {
+
+        }
     }
 
     public synchronized BingoResponse bingo(UUID playerId) {

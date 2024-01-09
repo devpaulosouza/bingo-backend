@@ -29,6 +29,8 @@ public class GameService {
     public SseEmitter addListener() {
         SseEmitter emitter = new SseEmitter(0L);
 
+        emitter.onCompletion(() -> this.watchers.remove(emitter));
+
         this.watchers.add(emitter);
         this.startPing();
 
@@ -51,7 +53,11 @@ public class GameService {
 
     private void setGameType(GameType type) {
         this.type = type;
-        this.notifyService.notifyGameTypeChanged(this.watchers, type);
+        try {
+            this.notifyService.notifyGameTypeChanged(this.watchers, type);
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void startPing() {
@@ -60,7 +66,11 @@ public class GameService {
         }
 
         this.pingScheduler = Executors.newSingleThreadScheduledExecutor();
-        this.pingScheduler.scheduleWithFixedDelay(this::notifyPing, 0, 60, TimeUnit.SECONDS);
+        try {
+            this.pingScheduler.scheduleWithFixedDelay(this::notifyPing, 0, 60, TimeUnit.SECONDS);
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void notifyPing() {
