@@ -280,6 +280,7 @@ public class StopService {
         response.setDrawnWords(this.drawnWords);
         response.setLetter(this.letter);
         response.setShowingResults(this.showingResults);
+        response.setValidateWordCount(this.validateWordCount);
 
         return response;
     }

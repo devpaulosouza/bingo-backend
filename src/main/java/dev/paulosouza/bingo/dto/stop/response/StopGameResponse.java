@@ -19,4 +19,6 @@ public class StopGameResponse {
 
     private boolean showingResults;
 
+    private int validateWordCount;
+
 }
