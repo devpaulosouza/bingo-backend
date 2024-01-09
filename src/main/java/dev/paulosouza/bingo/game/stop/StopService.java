@@ -161,7 +161,10 @@ public class StopService {
                 "App ou Site",
                 "Livro",
                 "A Saapatona é...",
-                "Nome"
+                "Nome",
+                "Marca famosa",
+                "Objeto",
+                "Sobrenome"
         ));
 
         this.drawnWords();
