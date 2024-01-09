@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.HasPasswordResponse;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
@@ -79,6 +80,12 @@ public class StopController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/has-password")
+    public ResponseEntity<HasPasswordResponse> getHasPassword() {
+        HasPasswordResponse response = this.stopService.hasPassword();
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping("kick-all")
     public ResponseEntity<Void> kickAll() {

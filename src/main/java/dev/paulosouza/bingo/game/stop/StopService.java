@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.game.stop;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.HasPasswordResponse;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
@@ -275,6 +276,14 @@ public class StopService {
         response.setDrawnWords(this.drawnWords);
         response.setLetter(this.letter);
         response.setShowingResults(this.showingResults);
+
+        return response;
+    }
+
+    public HasPasswordResponse hasPassword() {
+        HasPasswordResponse response = new HasPasswordResponse();
+
+        response.setHasPassword(this.hasPassword);
 
         return response;
     }
