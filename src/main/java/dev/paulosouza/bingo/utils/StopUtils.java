@@ -5,10 +5,7 @@ import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,8 +36,6 @@ public class StopUtils {
 
                 int percentageValid = playersCount >= 10 ? 6 : 9;
 
-                game.setScore(game.getScore() + (game.getValidWords()[i] <= percentageValid ? 0 : playersCount));
-
                 long minusScore = games.stream()
                         .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
                         .map(g -> g.getWords()[finalI])
@@ -52,17 +47,13 @@ public class StopUtils {
                         .filter(game.getWords()[finalI]::equalsIgnoreCase)
                         .count();
 
-                game.setScore(
-                        game.getScore() - minusScore
-                );
-
                 long newScore = game.getValidWords()[i] <= percentageValid ? 0 : playersCount;
 
                 if (StringUtils.isEmpty(game.getWords()[i])) {
                     newScore = 0;
                 }
 
-                game.getScores()[i] = newScore - minusScore;
+                game.getScores()[i] = (newScore - minusScore < 0) ? 0 : (newScore - minusScore);
 
             }
 
@@ -74,6 +65,8 @@ public class StopUtils {
         if (games.isEmpty()) {
             return Collections.emptyList();
         }
+
+        games.forEach(g -> g.setScore(Arrays.stream(g.getScores()).sum()));
 
         return games.stream()
                 .collect(Collectors.groupingBy(

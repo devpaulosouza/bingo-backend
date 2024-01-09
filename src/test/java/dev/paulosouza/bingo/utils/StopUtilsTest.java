@@ -109,6 +109,30 @@ class StopUtilsTest {
     }
 
     @Test
+    void checkWinnerDraw3() {
+        // given
+        List<StopGame> games = new ArrayList<>();
+
+        games.add(this.buildGame("0", 0));
+        games.add(this.buildGame("1", 1));
+
+        games.get(0).getWords()[0] = "Test1";
+        games.get(0).getWords()[1] = "Test2";
+        games.get(1).getWords()[0] = "Test1";
+        games.get(1).getWords()[1] = "Test2";
+
+        games.get(0).getValidWords()[0] = 0;
+        games.get(1).getValidWords()[0] = 0;
+
+        // when
+        List<StopGame> winners = StopUtils.checkWinner(games);
+
+        // then
+        Assertions.assertEquals(2, winners.size());
+        Assertions.assertEquals(1, winners.get(0).getScore());
+    }
+
+    @Test
     void setOtherPLayersWordsResponse() {
         // given
         List<StopGame> games = List.of(
