@@ -5,6 +5,7 @@ import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -68,9 +69,11 @@ public class StopUtils {
             if (game.getScore() < 0) {
                 game.setScore(0);
             }
-
-            log.info("game score. username = {} score = {}", game.getPlayer().getUsername(), game.getScore());
         });
+
+        if (games.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         return games.stream()
                 .collect(Collectors.groupingBy(

@@ -2,17 +2,19 @@ package dev.paulosouza.bingo.game.stop;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
-import dev.paulosouza.bingo.dto.stop.response.StopGameResponse;
 import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
+import dev.paulosouza.bingo.dto.stop.response.StopGameResponse;
 import dev.paulosouza.bingo.dto.stop.response.StopPlayerGameResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
+import dev.paulosouza.bingo.service.NotifyService;
 import dev.paulosouza.bingo.utils.ListUtils;
 import dev.paulosouza.bingo.utils.SseUtils;
 import dev.paulosouza.bingo.utils.StopUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class StopService {
 
     public static final String PLAYER_WAS_NOT_FOUND = "Player was not found";
@@ -85,6 +88,8 @@ public class StopService {
 
     private boolean validatingWords = false;
 
+    private final NotifyService notifyService;
+
     public synchronized StopGame join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
 
@@ -109,6 +114,12 @@ public class StopService {
         game.setWords(new String[wordsCount]);
 
         this.games.add(game);
+
+        try {
+            this.notifyService.notifyJoin(this.admins, null);
+        } catch (Exception ignored) {
+
+        }
 
         return game;
     }
@@ -171,12 +182,17 @@ public class StopService {
         this.schedulerStop = Executors.newSingleThreadScheduledExecutor();
 
         this.schedulerCanStop.scheduleWithFixedDelay(this::setCanStop, CAN_STOP_SECONDS, CAN_STOP_SECONDS, TimeUnit.SECONDS);
-        this.schedulerStop.scheduleWithFixedDelay(this::stop, STOP_SECONDS, STOP_SECONDS, TimeUnit.SECONDS);
+        this.schedulerStop.scheduleWithFixedDelay(this::stopScheduled, STOP_SECONDS, STOP_SECONDS, TimeUnit.SECONDS);
 
         this.canStopAt = LocalDateTime.now().plusSeconds(CAN_STOP_SECONDS);
         this.stopAt = LocalDateTime.now().plusSeconds(STOP_SECONDS);
 
-        this.notifyStart();
+        try {
+            this.notifyService.notifyStart(SseUtils.mapStopEmitters(this.games, this.admins));
+        } catch (Exception ignored) {
+
+        }
+
         this.startPing();
 
         return response;
@@ -197,13 +213,10 @@ public class StopService {
         response.setStopAt(this.stopAt);
         response.setStopped(this.isStopped);
         response.setValidatingWords(this.validatingWords);
+        response.setCanStop(this.canStop);
 
         int count = this.validateWordCount >= game.getWords().length ? game.getWords().length - 1 : this.validateWordCount;
         StopUtils.setOtherPLayersWordsResponse(game, count, this.games, response);
-
-        if (this.canStopAt != null) {
-            response.setCanStop(this.canStopAt.isBefore(LocalDateTime.now()));
-        }
 
         if (this.validateWordCount != -1) {
             response.setValidateWordCount(this.validateWordCount);
@@ -213,7 +226,11 @@ public class StopService {
     }
 
     public void kickAll() {
-        this.notifyKickAll();
+        try {
+            this.notifyService.notifyKickAll(SseUtils.mapStopEmitters(this.games, this.admins));
+        } catch (Exception ignored) {
+
+        }
 
         this.games.clear();
         this.drawnWords.clear();
@@ -253,13 +270,15 @@ public class StopService {
         response.setGames(this.games);
         response.setWinners(this.winners);
         response.setDrawnWords(this.drawnWords);
-        response.setLetter(this.letter);
+        response.setLetter(this.letter);;
 
         return response;
     }
 
     public SseEmitter addListener(UUID playerId, boolean isAdmin) {
         SseEmitter emitter = new SseEmitter(0L);
+
+        emitter.onCompletion(() -> this.removeListener(emitter));
 
         if (isAdmin) {
             this.admins.add(emitter);
@@ -271,6 +290,8 @@ public class StopService {
                     .getPlayer();
 
             player.setEmitter(emitter);
+
+            emitter.onCompletion(() -> player.setEmitter(null));
         }
 
         return emitter;
@@ -314,7 +335,7 @@ public class StopService {
         this.validateIsNotStopped();
         this.stop();
 
-        this.notifyStopped(playerName);
+        this.notifyService.notifyStopped(SseUtils.mapStopEmitters(this.games, this.admins), playerName);
 
         return true;
     }
@@ -351,6 +372,12 @@ public class StopService {
         game.getWords()[request.getPosition()] = request.getWord();
     }
 
+    private void removeListener(SseEmitter emitter) {
+        synchronized (this.admins) {
+            this.admins.remove(emitter);
+        }
+    }
+
     private void startPing() {
         if (this.schedulerPing != null) {
             this.schedulerPing.shutdown();
@@ -358,7 +385,7 @@ public class StopService {
 
         try {
             this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
-            this.schedulerPing.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
+            this.schedulerPing.scheduleWithFixedDelay(() -> this.notifyService.notifyPing(SseUtils.mapStopEmitters(this.games, this.admins)), 0, 10, TimeUnit.SECONDS);
             log.info("time {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         } catch (Exception ignored) {
 
@@ -467,52 +494,7 @@ public class StopService {
     private void setCanStop() {
         this.canStop = true;
         this.schedulerCanStop.shutdown();
-    }
-
-    private void notifyStart() {
-        SseUtils.broadcastStartStopMessage(
-                SseUtils.mapStopEmitters(this.games, this.admins)
-        );
-    }
-
-    private void notifyStopped(String playerName) {
-        SseUtils.broadcastStopStoppedMessage(
-                SseUtils.mapStopEmitters(this.games, this.admins),
-                playerName
-        );
-    }
-
-    private void notifyKickAll() {
-        SseUtils.broadcastKickAll(
-                SseUtils.mapStopEmitters(this.games, this.admins)
-        );
-    }
-
-    private void notifyValidateWord(int validateWordCount) {
-        SseUtils.broadcastValidateWord(
-                SseUtils.mapStopEmitters(this.games, this.admins),
-                validateWordCount
-        );
-    }
-
-    private void notifyWinner(Player player) {
-        SseUtils.broadcastWinner(
-                SseUtils.mapStopEmitters(this.games, this.admins),
-                player
-        );
-    }
-
-    private void notifyRestart() {
-        SseUtils.broadcastStopRestart(
-                SseUtils.mapStopEmitters(this.games, this.admins)
-        );
-    }
-
-    private void notifyPing() {
-        log.info("time {}", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
-        SseUtils.broadcastPing(
-                SseUtils.mapStopEmitters(this.games, this.admins)
-        );
+        this.notifyService.notifyCanStop(SseUtils.mapStopEmitters(this.games, this.admins));
     }
 
     private void drawnWords() {
@@ -521,6 +503,10 @@ public class StopService {
             log.info("Drawn word {}", word);
             this.drawnWords.add(word);
         }
+    }
+    private void stopScheduled() {
+        this.stop();
+        this.notifyService.notifyStopped(SseUtils.mapStopEmitters(this.games, this.admins), null);
     }
 
     private void stop() {
@@ -536,8 +522,6 @@ public class StopService {
 
         this.schedulerValidateWord = Executors.newSingleThreadScheduledExecutor();
         this.schedulerValidateWord.scheduleWithFixedDelay(this::incrementValidateWordCount, INCREMENT_VALIDATE_WORD_SECONDS, INCREMENT_VALIDATE_WORD_SECONDS, TimeUnit.SECONDS);
-
-        this.notifyStopped(null);
     }
 
     private void restart() {
@@ -548,7 +532,7 @@ public class StopService {
             this.schedulerPing.shutdown();
         }
 
-        this.notifyRestart();
+        this.notifyService.notifyRestart(SseUtils.mapStopEmitters(this.games, this.admins));
 
         this.schedulerRestart = Executors.newSingleThreadScheduledExecutor();
         this.schedulerPing = Executors.newSingleThreadScheduledExecutor();
@@ -567,7 +551,7 @@ public class StopService {
         }
 
         log.info("incrementing validate word count = {}", this.validateWordCount);
-        this.notifyValidateWord(this.validateWordCount);
+        this.notifyService.notifyValidateWord(SseUtils.mapStopEmitters(this.games, this.admins), this.validateWordCount);
     }
 
     private void finish() {
@@ -576,7 +560,7 @@ public class StopService {
         log.info("Winners size = {}", winnerList.size());
 
         if (winnerList.size() == 1) {
-            this.notifyWinner(winnerList.get(0).getPlayer());
+            this.notifyService.notifyWinner(SseUtils.mapStopEmitters(this.games, this.admins), winnerList.get(0).getPlayer());
             winnerList.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
             this.winners.addAll(winnerList.stream().map(StopGame::getPlayer).toList());
         } else {

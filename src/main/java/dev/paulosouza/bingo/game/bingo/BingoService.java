@@ -5,11 +5,11 @@ import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
-import dev.paulosouza.bingo.dto.bingo.response.sse.DrawnNumberResponse;
-import dev.paulosouza.bingo.dto.bingo.response.sse.MarkedResponse;
+import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
+import dev.paulosouza.bingo.service.NotifyService;
 import dev.paulosouza.bingo.utils.GameUtils;
 import dev.paulosouza.bingo.utils.ListUtils;
 import dev.paulosouza.bingo.utils.SseUtils;
@@ -59,6 +59,8 @@ public class BingoService {
 
     private ScheduledExecutorService pingScheduler;
 
+    private final NotifyService notifyService;
+
     public synchronized BingoCard join(PlayerRequest request) {
         this.validatePassword(request.getPassword());
 
@@ -84,7 +86,7 @@ public class BingoService {
         } while (this.cardAlreadyExists(card));
 
         this.cards.add(card);
-        this.notifyJoin(card);
+        this.notifyService.notifyJoin(this.admins, card);
 
         return card;
     }
@@ -101,7 +103,7 @@ public class BingoService {
 
         card.getMarkedNumbers()[request.getI()][request.getJ()] = request.isMarked();
 
-        this.notifyMarked(new MarkedResponse(request.getPlayerId(), request.getI(), request.getJ(), request.isMarked()));
+        this.notifyService.notifyMarked(this.admins, new MarkedResponse(request.getPlayerId(), request.getI(), request.getJ(), request.isMarked()));
 
         if (GameUtils.checkStandardWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers)) {
             response.setWinner(true);
@@ -124,7 +126,7 @@ public class BingoService {
 
         this.scheduledExecutorService.scheduleWithFixedDelay(this::drawNumber, 0, 10, TimeUnit.SECONDS);
 
-        SseUtils.broadcastStartMessage(SseUtils.mapEmitters(this.cards, this.admins));
+        SseUtils.broadcast(SseUtils.mapEmitters(this.cards, this.admins), new StartedResponse(true));
     }
 
     public synchronized BingoResponse bingo(UUID playerId) {
@@ -140,7 +142,7 @@ public class BingoService {
                 : GameUtils.checkBlackoutWinner(card.getMarkedNumbers(), card.getNumbers(), this.drawnNumbers);
 
         if (isWinner) {
-            this.notifyWinner(card.getPlayer());
+            this.notifyService.notifyWinner(SseUtils.mapEmitters(this.cards, this.admins), card.getPlayer());
             this.isGameRunning = false;
             this.scheduledExecutorService.shutdown();
             this.winners.add(card.getPlayer());
@@ -163,7 +165,7 @@ public class BingoService {
                 card.setNumbers(GameUtils.drawCardNumbers());
             } while (this.cardAlreadyExists(card));
         });
-        this.notifyClean();
+        this.notifyService.notifyClean(SseUtils.mapEmitters(this.cards, this.admins));
         this.drawnNumbers.clear();
         if (this.scheduledExecutorService != null) {
             this.scheduledExecutorService.shutdown();
@@ -171,7 +173,7 @@ public class BingoService {
     }
 
     public void kickAll() {
-        this.notifyKickAll();
+        this.notifyService.notifyKickAll(SseUtils.mapEmitters(this.cards, this.admins));
 
         this.cards.clear();
         this.drawnNumbers.clear();
@@ -221,9 +223,10 @@ public class BingoService {
         return response;
     }
 
-    public void addListener(UUID playerId, boolean isAdmin, SseEmitter emitter) {
+    public synchronized void addListener(UUID playerId, boolean isAdmin, SseEmitter emitter) {
         if (isAdmin) {
             this.admins.add(emitter);
+            emitter.onCompletion(() -> this.removeListener(emitter));
         } else {
             Player player = this.cards.stream()
                     .filter(card -> card.getPlayer().getId().equals(playerId))
@@ -232,6 +235,7 @@ public class BingoService {
                     .getPlayer();
 
             player.setEmitter(emitter);
+            emitter.onCompletion(() -> player.setEmitter(null));
         }
         this.startPing();
     }
@@ -249,6 +253,11 @@ public class BingoService {
         this.setPassword(request.getPassword());
     }
 
+    private void removeListener(SseEmitter emitter) {
+        synchronized (this.admins) {
+            this.admins.remove(emitter);
+        }
+    }
     private void setAllowList(List<String> usernames) {
         this.allowList.clear();
         this.allowList.addAll(usernames);
@@ -256,7 +265,7 @@ public class BingoService {
 
     private void setGameMode(BingoMode mode) {
         this.mode = mode;
-        this.notifyGameMode(mode);
+        this.notifyService.notifyGameMode(SseUtils.mapEmitters(this.cards, this.admins), mode);
     }
 
     private void setPassword(String password) {
@@ -289,7 +298,7 @@ public class BingoService {
 
         int number = ListUtils.chooseNumber(this.possibleNumbers);
         this.drawnNumbers.add(number);
-        this.notifyNumber(number);
+        this.notifyService.notifyNumber(SseUtils.mapEmitters(this.cards, this.admins), this.drawnNumbers, number);
 
         log.info("drawn number = {}", number);
     }
@@ -300,57 +309,7 @@ public class BingoService {
         }
 
         this.pingScheduler = Executors.newSingleThreadScheduledExecutor();
-        this.pingScheduler.scheduleWithFixedDelay(this::notifyPing, 0, 10, TimeUnit.SECONDS);
-    }
-
-    private void notifyPing() {
-        SseUtils.broadcastPing(
-                SseUtils.mapEmitters(this.cards, this.admins)
-        );
-    }
-
-    private void notifyWinner(Player player) {
-        SseUtils.broadcastWinner(SseUtils.mapEmitters(this.cards, this.admins), player);
-    }
-
-    private void notifyNumber(int number) {
-        SseUtils.broadcastDrawnNumberMessage(
-                SseUtils.mapEmitters(this.cards, this.admins),
-                new DrawnNumberResponse(number, this.drawnNumbers)
-        );
-    }
-
-    private void notifyClean() {
-        SseUtils.broadcastClean(
-                SseUtils.mapEmitters(this.cards, this.admins)
-        );
-    }
-
-    private void notifyKickAll() {
-        SseUtils.broadcastKickAll(
-                SseUtils.mapEmitters(this.cards, this.admins)
-        );
-    }
-
-    private void notifyMarked(MarkedResponse markedResponse) {
-        SseUtils.broadcastMarked(
-                this.admins,
-                markedResponse
-        );
-    }
-
-    private void notifyJoin(BingoCard card) {
-        SseUtils.broadcastJoin(
-                this.admins,
-                card
-        );
-    }
-
-    private void notifyGameMode(BingoMode mode) {
-        SseUtils.broadcastGameMode(
-                SseUtils.mapEmitters(this.cards, this.admins),
-                mode
-        );
+        this.pingScheduler.scheduleWithFixedDelay(() -> this.notifyService.notifyPing(SseUtils.mapEmitters(this.cards, this.admins)), 0, 10, TimeUnit.SECONDS);
     }
 
     private void validateMark(MarkRequest request) {

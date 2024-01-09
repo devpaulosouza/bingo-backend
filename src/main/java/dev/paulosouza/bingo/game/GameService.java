@@ -3,7 +3,8 @@ package dev.paulosouza.bingo.game;
 import dev.paulosouza.bingo.dto.request.GameConfigRequest;
 import dev.paulosouza.bingo.dto.request.GameType;
 import dev.paulosouza.bingo.dto.response.GameConfigResponse;
-import dev.paulosouza.bingo.utils.SseUtils;
+import dev.paulosouza.bingo.service.NotifyService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class GameService {
 
     private final List<SseEmitter> watchers = new ArrayList<>();
@@ -21,6 +23,8 @@ public class GameService {
     private ScheduledExecutorService pingScheduler;
 
     private GameType type = GameType.STOP;
+
+    private final NotifyService notifyService;
 
     public SseEmitter addListener() {
         SseEmitter emitter = new SseEmitter(0L);
@@ -47,7 +51,7 @@ public class GameService {
 
     private void setGameType(GameType type) {
         this.type = type;
-        this.notifyGameTypeChanged(type);
+        this.notifyService.notifyGameTypeChanged(this.watchers, type);
     }
 
     private void startPing() {
@@ -60,15 +64,11 @@ public class GameService {
     }
 
     private void notifyPing() {
-        SseUtils.broadcastPing(
-                SseUtils.mapEmitters(new ArrayList<>(), this.watchers)
-        );
+        try {
+            this.notifyService.notifyPing(this.watchers);
+        } catch (Exception ignored) {
+
+        }
     }
 
-    private void notifyGameTypeChanged(GameType type) {
-        SseUtils.broadcastGameType(
-                SseUtils.mapEmitters(new ArrayList<>(), this.watchers),
-                type
-        );
-    }
 }

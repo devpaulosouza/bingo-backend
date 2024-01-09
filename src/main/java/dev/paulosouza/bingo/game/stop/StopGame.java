@@ -31,8 +31,8 @@ public class StopGame {
 
     public void setWords(String[] words) {
         this.words = words;
-        this.validWords = new int[10];
-        Arrays.fill(this.validWords, 10);
+        this.validWords = new int[words.length];
+        Arrays.fill(this.validWords, words.length);
     }
 
 }
