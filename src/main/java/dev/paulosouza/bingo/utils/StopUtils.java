@@ -54,15 +54,13 @@ public class StopUtils {
                         game.getScore() - minusScore
                 );
 
-                for (int j = 0; j < game.getWords().length; j++) {
-                    long newScore = game.getValidWords()[i] <= percentageValid ? 0 : playersCount;
+                long newScore = game.getValidWords()[i] <= percentageValid ? 0 : playersCount;
 
-                    if (StringUtils.isEmpty(game.getWords()[j])) {
-                        newScore = 0;
-                    }
-
-                    game.getScores()[j] = newScore - minusScore;
+                if (StringUtils.isEmpty(game.getWords()[i])) {
+                    newScore = 0;
                 }
+
+                game.getScores()[i] = newScore - minusScore;
 
             }
 

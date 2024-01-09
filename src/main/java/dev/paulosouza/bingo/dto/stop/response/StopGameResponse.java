@@ -17,4 +17,6 @@ public class StopGameResponse {
 
     private Character letter;
 
+    private boolean showingResults;
+
 }

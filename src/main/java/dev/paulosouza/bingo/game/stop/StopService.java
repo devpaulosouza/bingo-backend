@@ -48,6 +48,8 @@ public class StopService {
     private final List<String> allowList = new ArrayList<>();
 
     private boolean kickWinner = true;
+
+    private boolean showingResults = false;
     private boolean hasPassword = true;
 
     private boolean isAcceptingNewPlayers = true;
@@ -139,6 +141,7 @@ public class StopService {
         this.drawnWords.clear();
         this.winners.clear();
         this.validatingWords = false;
+        this.showingResults = false;
 
         this.games.forEach(game -> game.setWords(new String[wordsCount]));
 
@@ -270,7 +273,8 @@ public class StopService {
         response.setGames(this.games);
         response.setWinners(this.winners);
         response.setDrawnWords(this.drawnWords);
-        response.setLetter(this.letter);;
+        response.setLetter(this.letter);
+        response.setShowingResults(this.showingResults);
 
         return response;
     }
@@ -558,6 +562,8 @@ public class StopService {
         List<StopGame> winnerList = StopUtils.checkWinner(this.games);
 
         log.info("Winners size = {}", winnerList.size());
+
+        this.showingResults = true;
 
         if (winnerList.size() == 1) {
             this.notifyService.notifyWinner(SseUtils.mapStopEmitters(this.games, this.admins), winnerList.get(0).getPlayer());
