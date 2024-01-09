@@ -29,7 +29,9 @@ public class StopUtils {
             for (int i = 0; i < game.getWords().length; i++) {
                 int finalI = i;
 
-                game.setScores(new long[game.getWords().length]);
+                if (i == 0) {
+                    game.setScores(new long[game.getWords().length]);
+                }
 
                 if (game.getWords()[finalI] == null) {
                     continue;
