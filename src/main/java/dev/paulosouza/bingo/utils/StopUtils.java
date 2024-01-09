@@ -15,7 +15,7 @@ public class StopUtils {
 
     }
 
-    @SuppressWarnings("java:S3358")
+    @SuppressWarnings({"java:S3358", "java:S3776"})
     public static List<StopGame> checkWinner(List<StopGame> games) {
 
         int playersCount = games.size();

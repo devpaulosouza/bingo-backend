@@ -557,14 +557,19 @@ public class StopService {
         this.validatingWords = true;
         this.validateWordCount++;
 
-        if (this.validateWordCount >= wordsCount) {
+        log.debug("this.validateWordCount >= wordsCount = {}", this.validateWordCount >= wordsCount);
+        if (this.validateWordCount >= this.wordsCount) {
             this.schedulerValidateWord.shutdown();
             this.finish();
             return;
         }
 
         log.info("incrementing validate word count = {}", this.validateWordCount);
-        this.notifyService.notifyValidateWord(SseUtils.mapStopEmitters(this.games, this.admins), this.validateWordCount);
+        try {
+            this.notifyService.notifyValidateWord(SseUtils.mapStopEmitters(this.games, this.admins), this.validateWordCount);
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void finish() {
