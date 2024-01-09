@@ -164,7 +164,8 @@ public class StopService {
                 "Nome",
                 "Marca famosa",
                 "Objeto",
-                "Sobrenome"
+                "Sobrenome",
+                "Vilão"
         ));
 
         this.drawnWords();
