@@ -40,8 +40,6 @@ public class StopUtils {
                         .filter(g -> !g.getPlayer().getId().equals(game.getPlayer().getId()))
                         .map(g -> g.getWords()[finalI])
                         .filter(Objects::nonNull)
-                        .filter(w -> !w.isEmpty())
-                        .filter(w -> w.length() != 1)
                         .map(String::toLowerCase)
                         .map(s -> s.replaceAll("\\s", ""))
                         .map(s -> s.replaceAll("[^\\p{ASCII}]", ""))
@@ -50,11 +48,12 @@ public class StopUtils {
 
                 long newScore = game.getValidWords()[i] <= percentageValid ? 0 : playersCount;
 
+
                 if (StringUtils.isEmpty(game.getWords()[i])) {
                     newScore = 0;
                 }
 
-                game.getScores()[i] = (newScore - minusScore < 0) ? 0 : (newScore - minusScore);
+                game.getScores()[i] = (newScore - minusScore < 0 || !StopUtils.isWordValid(game.getWords()[i])) ? 0 : (newScore - minusScore);
 
             }
 
@@ -113,6 +112,16 @@ public class StopUtils {
                             .toList()
             );
         }
+    }
+
+    public static boolean isWordValid(String word) {
+        if (word.isEmpty()) {
+            return false;
+        }
+
+        String c = word.charAt(0) + "";
+
+        return !word.replaceAll(c, "").isEmpty();
     }
 
 }

@@ -33,6 +33,7 @@ public class StopGame {
         this.words = words;
         this.validWords = new int[words.length];
         Arrays.fill(this.validWords, 10);
+        Arrays.fill(this.words, "");
     }
 
 }
