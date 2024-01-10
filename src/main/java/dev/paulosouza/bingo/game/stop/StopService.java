@@ -340,7 +340,9 @@ public class StopService {
         if (optionalGame.isPresent()) {
             StopGame game = optionalGame.get();
 
-            if (Arrays.stream(game.getWords()).anyMatch(Objects::isNull)) {
+            boolean hasInvalidWord = Arrays.stream(game.getWords()).anyMatch(w -> !StopUtils.isWordValid(w));
+
+            if (Arrays.stream(game.getWords()).anyMatch(Objects::isNull) || hasInvalidWord) {
                 return false;
             }
 
