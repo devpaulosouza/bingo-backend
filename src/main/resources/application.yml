@@ -2,4 +2,4 @@
 application:
   basic:
     user: ${BASIC_USER:admin}
-    password: ${BASIC_PASSWORD:sapa1}
+    password: ${BASIC_PASSWORD:saapatonaadmin1}
