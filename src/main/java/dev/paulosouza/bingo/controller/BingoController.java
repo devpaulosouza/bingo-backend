@@ -1,6 +1,5 @@
 package dev.paulosouza.bingo.controller;
 
-import dev.paulosouza.bingo.dto.bingo.request.BingoConfigRequest;
 import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
@@ -57,16 +56,16 @@ public class BingoController {
         return emitter;
     }
 
-    @PostMapping("/config")
-    public ResponseEntity<Void> config(@RequestBody BingoConfigRequest request) {
-        this.bingoService.setConfig(request);
-
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/has-password")
     public ResponseEntity<HasPasswordResponse> getHasPassword() {
         HasPasswordResponse response = this.bingoService.hasPassword();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<AdminGameResponse> getGame() {
+        AdminGameResponse response = this.bingoService.getGame();
 
         return ResponseEntity.ok(response);
     }

@@ -2,8 +2,6 @@ package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.HasPasswordResponse;
-import dev.paulosouza.bingo.dto.bingo.response.StartStopResponse;
-import dev.paulosouza.bingo.dto.stop.request.StopConfigRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopSetWordRequest;
 import dev.paulosouza.bingo.dto.stop.request.StopValidateWordRequest;
 import dev.paulosouza.bingo.dto.stop.response.StopGameResponse;
@@ -31,13 +29,6 @@ public class StopController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/start")
-    public ResponseEntity<StartStopResponse> start() {
-        StartStopResponse response = this.stopService.start();
-
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/users/{playerId}/stop")
     public ResponseEntity<Boolean> stop(@PathVariable("playerId") UUID playerId) {
         boolean stop = this.stopService.stop(playerId);
@@ -59,23 +50,9 @@ public class StopController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/config")
-    public ResponseEntity<Void> setConfig(@RequestBody StopConfigRequest request) {
-        this.stopService.setConfig(request);
-
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/users/{playerId}")
     public ResponseEntity<StopPlayerGameResponse> getConfig(@PathVariable("playerId") UUID playerId) {
         StopPlayerGameResponse response = this.stopService.getGame(playerId);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("")
-    public ResponseEntity<StopGameResponse> getConfig() {
-        StopGameResponse response = this.stopService.getGame();
 
         return ResponseEntity.ok(response);
     }
@@ -87,19 +64,16 @@ public class StopController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("kick-all")
-    public ResponseEntity<Void> kickAll() {
-        this.stopService.kickAll();
-
-        return ResponseEntity.noContent().build();
+    @GetMapping(value="/connect/players/{playerId}")
+    public SseEmitter connect(@PathVariable("playerId") UUID playerId) {
+        return this.stopService.addListener(playerId, false);
     }
 
-    @GetMapping(value="/connect/players/{playerId}")
-    public SseEmitter connect(
-            @PathVariable("playerId") UUID playerId,
-            @RequestParam(value = "isAdmin", required = false) boolean isAdmin
-    ) {
-        return this.stopService.addListener(playerId, isAdmin);
+    @GetMapping
+    public ResponseEntity<StopGameResponse> getAll() {
+        StopGameResponse response = this.stopService.getGame();
+
+        return ResponseEntity.ok(response);
     }
 
 }

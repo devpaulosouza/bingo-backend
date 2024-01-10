@@ -51,6 +51,7 @@ public class WebSecurityConfig {
 						"/favicon.ico",
 						"/games/bingo/**",
 						"/games/admin/bingo/connect/**",
+						"/games/admin/stop/connect/**",
 						"/games/stop/**",
 						"/games/config/**",
 						"/games/watch/**"

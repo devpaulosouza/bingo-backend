@@ -311,6 +311,7 @@ public class StopService {
 
             emitter.onCompletion(() -> player.setEmitter(null));
         }
+        this.startPing();
 
         return emitter;
     }

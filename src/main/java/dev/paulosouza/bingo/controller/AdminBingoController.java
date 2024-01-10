@@ -1,8 +1,7 @@
 package dev.paulosouza.bingo.controller;
 
-import dev.paulosouza.bingo.dto.bingo.response.AdminGameResponse;
+import dev.paulosouza.bingo.dto.bingo.request.BingoConfigRequest;
 import dev.paulosouza.bingo.game.bingo.BingoService;
-import dev.paulosouza.bingo.game.stop.StopService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +18,11 @@ public class AdminBingoController {
 
     private final BingoService bingoService;
 
-    private final StopService stopService;
+    @PostMapping("/config")
+    public ResponseEntity<Void> config(@RequestBody BingoConfigRequest request) {
+        this.bingoService.setConfig(request);
 
-
-    @GetMapping
-    public ResponseEntity<AdminGameResponse> getGame() {
-        AdminGameResponse response = this.bingoService.getGame();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/start")
