@@ -23,13 +23,6 @@ public class GameController {
         return this.gameService.addListener();
     }
 
-    @PostMapping("/config")
-    public ResponseEntity<Void> setConfig(GameConfigRequest request) {
-        this.gameService.setConfig(request);
-
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/config")
     public ResponseEntity<GameConfigResponse> getConfig() {
         GameConfigResponse response = this.gameService.getConfig();

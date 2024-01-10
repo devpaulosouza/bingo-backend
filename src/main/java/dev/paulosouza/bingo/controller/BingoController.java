@@ -27,27 +27,6 @@ public class BingoController {
         return ResponseEntity.ok(card);
     }
 
-    @PostMapping("start")
-    public ResponseEntity<Void> start() {
-        this.bingoService.startGame();
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("clean")
-    public ResponseEntity<Void> clean() {
-        this.bingoService.clean();
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("kick-all")
-    public ResponseEntity<Void> kickAll() {
-        this.bingoService.kickAll();
-
-        return ResponseEntity.noContent().build();
-    }
-
     @PostMapping("mark")
     public ResponseEntity<MarkResponse> mark(@RequestBody MarkRequest request) {
         MarkResponse response = this.bingoService.mark(request);
@@ -68,21 +47,12 @@ public class BingoController {
 
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/admin")
-    public ResponseEntity<AdminGameResponse> getGame() {
-        AdminGameResponse response = this.bingoService.getGame();
-
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping(value="/connect/players/{playerId}")
-    public SseEmitter connect(
-            @PathVariable("playerId") UUID playerId,
-            @RequestParam(value = "isAdmin", required = false) boolean isAdmin
-    ) {
+    public SseEmitter connect(@PathVariable("playerId") UUID playerId) {
         SseEmitter emitter = new SseEmitter(0L);
 
-        this.bingoService.addListener(playerId, isAdmin, emitter);
+        this.bingoService.addListener(playerId, false, emitter);
 
         return emitter;
     }
