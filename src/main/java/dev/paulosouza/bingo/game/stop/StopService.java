@@ -368,19 +368,22 @@ public class StopService {
         StopGame game = this.games.stream().filter(g -> g.getPosition() == request.getPlayerPosition())
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
-        Player player = this.games.stream().filter(g -> g.getPosition() == request.getPlayerPosition())
+        Player player = this.games.stream().filter(g -> g.getPlayer().getId().equals(playerId))
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND))
                 .getPlayer();
 
         int position = request.getPosition();
 
-        if (request.isValid()) {
-            game.getValidWords()[position] = Math.min(10, game.getValidWords()[position] + 1);
-        } else {
-            game.getValidWords()[position] = Math.max(0, game.getValidWords()[position] - 1);
+        game.getValidWords()[position] = Math.max(0, game.getValidWords()[position] + request.getPoints());
+        game.getInvalidPlayers()[position].add(player);
+
+        this.notifyService.notifyPing(SseUtils.mapStopEmitters(this.games, this.admins));
+
+        if (!game.getPlayer().equals(player)) {
             log.info("Player = {} set word = {} invalid", player.getUsername(), game.getWords()[position]);
         }
+
     }
 
     public void setWord(StopSetWordRequest request) {

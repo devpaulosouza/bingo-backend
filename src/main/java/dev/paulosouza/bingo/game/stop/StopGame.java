@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Arrays;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @Builder
@@ -29,11 +28,15 @@ public class StopGame {
 
     private long[] scores;
 
+    private HashSet<Player>[] invalidPlayers;
+
     public void setWords(String[] words) {
         this.words = words;
         this.validWords = new int[words.length];
+        this.invalidPlayers = new HashSet[words.length];
         Arrays.fill(this.validWords, 10);
         Arrays.fill(this.words, "");
+        Arrays.fill(this.invalidPlayers, new HashSet<>());
     }
 
 }

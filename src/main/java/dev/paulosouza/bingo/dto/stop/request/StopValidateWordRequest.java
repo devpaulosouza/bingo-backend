@@ -7,8 +7,8 @@ public class StopValidateWordRequest {
 
     private int playerPosition;
 
-    private boolean isValid;
-
     private int position;
+
+    private int points = 1;
 
 }
