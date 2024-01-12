@@ -382,6 +382,8 @@ public class StopService {
 
         if (!game.getPlayer().equals(player)) {
             log.info("Player = {} set word = {} invalid", player.getUsername(), game.getWords()[position]);
+        } else {
+            this.startPing();
         }
 
     }
