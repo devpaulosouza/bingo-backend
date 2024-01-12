@@ -378,8 +378,6 @@ public class StopService {
         game.getValidWords()[position] = Math.max(0, game.getValidWords()[position] + request.getPoints());
         game.getInvalidPlayers()[position].add(player);
 
-        this.notifyService.notifyPing(SseUtils.mapStopEmitters(this.games, this.admins));
-
         if (!game.getPlayer().equals(player)) {
             log.info("Player = {} set word = {} invalid", player.getUsername(), game.getWords()[position]);
         } else {
