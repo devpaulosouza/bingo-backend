@@ -48,10 +48,10 @@ public class BingoController {
     }
 
     @GetMapping(value="/connect/players/{playerId}")
-    public SseEmitter connect(@PathVariable("playerId") UUID playerId) {
+    public SseEmitter connect(@PathVariable("playerId") UUID playerId, @RequestParam(name = "isAdmin", required = false) boolean isAdmin) {
         SseEmitter emitter = new SseEmitter(0L);
 
-        this.bingoService.addListener(playerId, false, emitter);
+        this.bingoService.addListener(playerId, isAdmin, emitter);
 
         return emitter;
     }

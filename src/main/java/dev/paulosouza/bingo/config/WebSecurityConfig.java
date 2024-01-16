@@ -50,6 +50,7 @@ public class WebSecurityConfig {
 						"/v3/api-docs/**",
 						"/favicon.ico",
 						"/games/bingo/**",
+						"/error",
 						"/games/admin/bingo/connect/**",
 						"/games/admin/stop/connect/**",
 						"/games/stop/**",
