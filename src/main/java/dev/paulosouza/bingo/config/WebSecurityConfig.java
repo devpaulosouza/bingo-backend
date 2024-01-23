@@ -54,6 +54,7 @@ public class WebSecurityConfig {
 						"/games/admin/bingo/connect/**",
 						"/games/admin/stop/connect/**",
 						"/games/stop/**",
+						"/games/drawn/**",
 						"/games/config/**",
 						"/games/watch/**"
 				)
