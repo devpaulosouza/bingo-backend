@@ -86,7 +86,7 @@ public class BingoService {
         } while (this.cardAlreadyExists(card));
 
         this.cards.add(card);
-        this.notifyService.notifyJoin(this.admins, card);
+        this.notifyService.notifyJoin(SseUtils.mapEmitters(this.cards, this.admins), card);
 
         return card;
     }
