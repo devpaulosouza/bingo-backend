@@ -19,4 +19,6 @@ public class BingoGameResponse {
 
     private BingoMode mode;
 
+    private int playersCount;
+
 }

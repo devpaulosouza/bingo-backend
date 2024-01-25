@@ -207,6 +207,7 @@ public class BingoService {
         }
         response.setGameRunning(this.isGameRunning);
         response.setMode(this.mode);
+        response.setPlayersCount(this.cards.size());
 
         return response;
     }
