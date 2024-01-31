@@ -21,4 +21,6 @@ public class StopGameResponse {
 
     private int validateWordCount;
 
+    private int playersCount;
+
 }

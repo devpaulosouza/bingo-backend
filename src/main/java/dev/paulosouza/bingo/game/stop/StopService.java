@@ -119,7 +119,7 @@ public class StopService {
         this.games.add(game);
 
         try {
-            this.notifyService.notifyJoin(this.admins, null);
+            this.notifyService.notifyJoin(SseUtils.mapStopEmitters(this.games, this.admins), null);
         } catch (Exception ignored) {
 
         }
@@ -281,6 +281,7 @@ public class StopService {
         response.setLetter(this.letter);
         response.setShowingResults(this.showingResults);
         response.setValidateWordCount(this.validateWordCount);
+        response.setPlayersCount(this.games.size());
 
         return response;
     }
