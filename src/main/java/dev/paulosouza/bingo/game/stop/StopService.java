@@ -222,6 +222,7 @@ public class StopService {
         response.setStopped(this.isStopped);
         response.setValidatingWords(this.validatingWords);
         response.setCanStop(this.canStop);
+        response.setPlayersCount(this.games.size());
 
         int count = this.validateWordCount >= game.getWords().length ? game.getWords().length - 1 : this.validateWordCount;
         StopUtils.setOtherPLayersWordsResponse(game, count, this.games, response);

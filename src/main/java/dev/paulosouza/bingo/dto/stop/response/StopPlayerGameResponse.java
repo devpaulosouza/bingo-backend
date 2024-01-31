@@ -36,4 +36,6 @@ public class StopPlayerGameResponse {
 
     private List<Player> winners;
 
+    private int playersCount;
+
 }
