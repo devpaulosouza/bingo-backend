@@ -597,6 +597,8 @@ public class StopService {
 
         this.showingResults = true;
 
+        this.notifyService.notifyRestart(SseUtils.mapStopEmitters(this.games, this.admins));
+
 //        if (winnerList.size() == 1) {
 //            this.notifyService.notifyWinner(SseUtils.mapStopEmitters(this.games, this.admins), winnerList.get(0).getPlayer());
 //            winnerList.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
