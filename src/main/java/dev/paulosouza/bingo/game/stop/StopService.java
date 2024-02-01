@@ -36,7 +36,7 @@ public class StopService {
     public static final String PLAYER_WAS_NOT_FOUND = "Player was not found";
     private int wordsCount = 7;
 
-    private static final int CAN_STOP_SECONDS = 30;
+    private static final int CAN_STOP_SECONDS = 40;
 
     private static final int STOP_SECONDS = 90;
 
@@ -149,23 +149,28 @@ public class StopService {
         this.possibleWords.clear();
 
         this.possibleWords.addAll(List.of(
-                "Programa de TV",
+                "Série",
                 "Comida",
                 "Profissão",
                 "CEP (Cidade, Estado, País)",
                 "Animal",
                 "Personagem",
-                "Famosas/Famosos",
+                "Famosa/Famoso vivo",
                 "Esporte",
                 "Cor",
                 "App ou Site",
                 "Livro",
-                "A Saapatona é...",
+                "Filme",
                 "Nome",
                 "Marca famosa",
                 "Objeto",
                 "Sobrenome",
-                "Vilã/Vilão"
+                "Vilã/Vilão",
+                "Carro",
+                "Autora/Autor",
+                "Famosa/Famoso que já faleceu",
+                "Parte do corpo humano",
+                "Time de futebol"
         ));
 
         this.drawnWords();
@@ -592,15 +597,15 @@ public class StopService {
 
         this.showingResults = true;
 
-        if (winnerList.size() == 1) {
-            this.notifyService.notifyWinner(SseUtils.mapStopEmitters(this.games, this.admins), winnerList.get(0).getPlayer());
-            winnerList.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
-            this.winners.addAll(winnerList.stream().map(StopGame::getPlayer).toList());
-        } else {
-            this.games.removeIf(game -> !winnerList.contains(game));
-            this.restart();
-            winnerList.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
-        }
+//        if (winnerList.size() == 1) {
+//            this.notifyService.notifyWinner(SseUtils.mapStopEmitters(this.games, this.admins), winnerList.get(0).getPlayer());
+//            winnerList.forEach(game -> log.info("Winner = {}", game.getPlayer().getUsername()));
+//            this.winners.addAll(winnerList.stream().map(StopGame::getPlayer).toList());
+//        } else {
+//            this.games.removeIf(game -> !winnerList.contains(game));
+//            this.restart();
+//            winnerList.forEach(game -> log.info("Draw = {}", game.getPlayer().getUsername()));
+//        }
 
     }
 }
