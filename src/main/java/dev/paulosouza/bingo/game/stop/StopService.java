@@ -168,7 +168,6 @@ public class StopService {
                 "Vilã/Vilão",
                 "Carro",
                 "Autora/Autor",
-                "Famosa/Famoso que já faleceu",
                 "Parte do corpo humano",
                 "Time de futebol"
         ));
