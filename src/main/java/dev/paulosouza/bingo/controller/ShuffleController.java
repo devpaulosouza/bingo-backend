@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.controller;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.HasPasswordResponse;
 import dev.paulosouza.bingo.dto.shuffle.request.ShuffleRequest;
 import dev.paulosouza.bingo.dto.shuffle.response.ShuffleGamePlayerResponse;
 import dev.paulosouza.bingo.game.shuffle.ShuffleService;
@@ -38,6 +39,27 @@ public class ShuffleController {
     @PostMapping("/players/{playerId}/set-words")
     public ResponseEntity<ShuffleGamePlayerResponse> setWords(@PathVariable("playerId") UUID playerId, @RequestBody ShuffleRequest player) {
         ShuffleGamePlayerResponse response = this.service.setWords(playerId, player);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/players/{playerId}/unfocused")
+    public ResponseEntity<ShuffleGamePlayerResponse> setUnfocused(@PathVariable("playerId") UUID playerId) {
+        this.service.setUnfocused(playerId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/players/{playerId}")
+    public ResponseEntity<ShuffleGamePlayerResponse> getGame(@PathVariable("playerId") UUID playerId) {
+        ShuffleGamePlayerResponse response = this.service.getGame(playerId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/has-password")
+    public ResponseEntity<HasPasswordResponse> getHasPassword() {
+        HasPasswordResponse response = this.service.hasPassword();
 
         return ResponseEntity.ok(response);
     }

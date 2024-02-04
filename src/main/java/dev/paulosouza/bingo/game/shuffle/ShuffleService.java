@@ -1,6 +1,7 @@
 package dev.paulosouza.bingo.game.shuffle;
 
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
+import dev.paulosouza.bingo.dto.bingo.response.HasPasswordResponse;
 import dev.paulosouza.bingo.dto.shuffle.request.ShuffleConfigRequest;
 import dev.paulosouza.bingo.dto.shuffle.request.ShuffleRequest;
 import dev.paulosouza.bingo.dto.shuffle.request.ShuffleStartRequest;
@@ -45,6 +46,8 @@ public class ShuffleService {
 
     private boolean isAcceptingNewPlayers = true;
 
+    private boolean isStoppedByWinner = false;
+
     private ScheduledExecutorService pingScheduler;
 
     public synchronized ShuffleGamePlayerResponse join(PlayerRequest request) {
@@ -55,6 +58,7 @@ public class ShuffleService {
                 .findFirst();
 
         if (existent.isPresent()) {
+            existent.get().setId(request.getId());
             return this.getGame(request.getId());
         }
 
@@ -64,12 +68,25 @@ public class ShuffleService {
                 .id(request.getId())
                 .username(request.getUsername())
                 .name(request.getName())
+                .focused(true)
+                .words(new String[this.shuffledWords.length])
                 .build();
 
         this.players.add(card);
         this.notifyService.notifyJoin(SseUtils.mapShuffleEmitters(this.players, this.admins), null);
 
         return this.getGame(request.getId());
+    }
+
+    public void setUnfocused(UUID playerId) {
+        ShufflePlayer player = this.players.stream()
+                .filter(p -> p.getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
+
+        player.setFocused(false);
+
+        this.notifyService.notifyUnfocused(this.admins, player.getId());
     }
 
     public synchronized void addListener(UUID playerId, boolean isAdmin, SseEmitter emitter) {
@@ -95,6 +112,8 @@ public class ShuffleService {
         this.words = request.getWords();
         this.shuffledWords = new String[request.getWords().length];
         this.winners.clear();
+
+        this.players.forEach(p -> p.setWords(new String[request.getWords().length]));
 
         for (int i = 0; i < request.getWords().length; ++i) {
             this.shuffledWords[i] = this.shuffle(request.getWords()[i]);
@@ -125,6 +144,10 @@ public class ShuffleService {
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
 
+        if (!player.isFocused()) {
+            throw new UnprocessableEntityException("Player lost the game because is unfocused");
+        }
+
         player.setWords(request.getWords());
 
         boolean isWinner = List.of(request.getWords()).equals(List.of(this.words));
@@ -136,6 +159,7 @@ public class ShuffleService {
 
         if (isWinner && this.totalWinners == this.winners.size()) {
             this.isGameRunning = false;
+            this.isStoppedByWinner = true;
         }
 
         return ShuffleGamePlayerResponse.builder()
@@ -168,6 +192,7 @@ public class ShuffleService {
                 .shuffledWords(this.shuffledWords)
                 .isGameRunning(this.isGameRunning)
                 .isWinner(this.winners.stream().anyMatch(p -> p.getId().equals(playerId)))
+                .focused(player.isFocused())
                 .build();
     }
 
@@ -175,7 +200,18 @@ public class ShuffleService {
         this.setPassword(request.getPassword());
     }
 
+    public HasPasswordResponse hasPassword() {
+        HasPasswordResponse response = new HasPasswordResponse();
+
+        response.setHasPassword(this.hasPassword);
+
+        return response;
+    }
+
     private void validateJoin() {
+        if (this.isStoppedByWinner) {
+            throw new UnprocessableEntityException("The game already has winners");
+        }
         if (!this.isAcceptingNewPlayers) {
             throw new UnprocessableEntityException("Game is not accepting players");
         }

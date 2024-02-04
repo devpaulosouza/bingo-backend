@@ -3,6 +3,7 @@ package dev.paulosouza.bingo.service;
 import dev.paulosouza.bingo.dto.bingo.request.BingoMode;
 import dev.paulosouza.bingo.dto.bingo.response.sse.*;
 import dev.paulosouza.bingo.dto.request.GameType;
+import dev.paulosouza.bingo.dto.shuffle.response.sse.UnfocusedResponse;
 import dev.paulosouza.bingo.dto.stop.sse.StopCanStopMessage;
 import dev.paulosouza.bingo.dto.stop.sse.response.StopRestartMessage;
 import dev.paulosouza.bingo.dto.stop.sse.response.StopStoppedMessage;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NotifyService {
@@ -85,4 +87,11 @@ public class NotifyService {
         );
     }
 
+    public void notifyUnfocused(List<SseEmitter> admins, UUID playerId) {
+        SseUtils.broadcast(
+                admins,
+                new UnfocusedResponse(playerId)
+        );
+
+    }
 }

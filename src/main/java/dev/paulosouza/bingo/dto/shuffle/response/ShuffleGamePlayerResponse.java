@@ -24,4 +24,6 @@ public class ShuffleGamePlayerResponse {
 
     private boolean isWinner;
 
+    private boolean focused;
+
 }
