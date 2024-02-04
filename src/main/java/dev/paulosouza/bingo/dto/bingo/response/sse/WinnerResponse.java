@@ -19,4 +19,11 @@ public class WinnerResponse extends SseEventResponse {
         this.playerId = playerId;
         this.playerName = playerName;
     }
+
+    public WinnerResponse() {
+        super(SseEventType.WINNER);
+        this.playerId = null;
+        this.playerName = null;
+    }
+
 }

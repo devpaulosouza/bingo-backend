@@ -1,4 +1,4 @@
-package dev.paulosouza.bingo.controller;
+package dev.paulosouza.bingo.controller.admin;
 
 import dev.paulosouza.bingo.dto.bingo.request.BingoConfigRequest;
 import dev.paulosouza.bingo.game.bingo.BingoService;

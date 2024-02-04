@@ -2,6 +2,7 @@ package dev.paulosouza.bingo.utils;
 
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
+import dev.paulosouza.bingo.game.shuffle.ShufflePlayer;
 import dev.paulosouza.bingo.game.stop.StopGame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -17,6 +18,17 @@ public class SseUtils {
 
     private SseUtils() {
 
+    }
+
+    public static List<SseEmitter> mapShuffleEmitters(List<ShufflePlayer> players, List<SseEmitter> admins) {
+        return Stream.concat(
+                        players
+                                .stream()
+                                .map(ShufflePlayer::getEmitter)
+                                .filter(Objects::nonNull),
+                        admins.stream()
+                )
+                .toList();
     }
 
     public static List<SseEmitter> mapEmitters(List<BingoCard> cards, List<SseEmitter> admins) {

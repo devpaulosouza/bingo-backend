@@ -26,6 +26,10 @@ public class NotifyService {
         SseUtils.broadcast(emitters, new WinnerResponse(player.getId(), player.getName()));
     }
 
+    public void notifyWinner(List<SseEmitter> emitters) {
+        SseUtils.broadcast(emitters, new WinnerResponse());
+    }
+
     public void notifyNumber(List<SseEmitter> emitters, List<Integer> drawnNumbers, int number) {
         SseUtils.broadcast(emitters, new DrawnNumberResponse(number, drawnNumbers));
     }
