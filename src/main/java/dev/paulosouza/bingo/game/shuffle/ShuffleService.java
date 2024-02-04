@@ -114,6 +114,7 @@ public class ShuffleService {
         this.winners.clear();
         this.isStoppedByWinner = false;
 
+        this.players.forEach(p -> p.setFocused(true));
         this.players.forEach(p -> p.setWords(new String[request.getWords().length]));
 
         for (int i = 0; i < request.getWords().length; ++i) {
