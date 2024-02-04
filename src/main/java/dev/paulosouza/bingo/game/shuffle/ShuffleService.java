@@ -112,6 +112,7 @@ public class ShuffleService {
         this.words = request.getWords();
         this.shuffledWords = new String[request.getWords().length];
         this.winners.clear();
+        this.isStoppedByWinner = false;
 
         this.players.forEach(p -> p.setWords(new String[request.getWords().length]));
 
