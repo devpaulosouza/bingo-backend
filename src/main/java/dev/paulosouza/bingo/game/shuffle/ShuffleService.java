@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -152,7 +153,7 @@ public class ShuffleService {
 
         player.setWords(request.getWords());
 
-        boolean isWinner = List.of(request.getWords()).equals(List.of(this.words));
+        boolean isWinner = Stream.of(request.getWords()).map(String::toLowerCase).toList().equals(Stream.of(this.words).map(String::toLowerCase).toList());
 
         if (isWinner) {
             this.winners.add(player);
