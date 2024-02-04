@@ -180,6 +180,7 @@ public class ShuffleService {
                 .words(this.words)
                 .isGameRunning(this.isGameRunning)
                 .shuffledWords(this.shuffledWords)
+                .playersCount(this.players.size())
                 .build();
     }
 
@@ -196,6 +197,7 @@ public class ShuffleService {
                 .isGameRunning(this.isGameRunning)
                 .isWinner(this.winners.stream().anyMatch(p -> p.getId().equals(playerId)))
                 .focused(player.isFocused())
+                .playersCount(this.players.size())
                 .build();
     }
 

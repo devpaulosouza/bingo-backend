@@ -24,4 +24,6 @@ public class ShuffleGameResponse {
 
     private boolean isGameRunning;
 
+    private int playersCount;
+
 }

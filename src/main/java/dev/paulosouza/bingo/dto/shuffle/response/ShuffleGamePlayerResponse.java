@@ -26,4 +26,6 @@ public class ShuffleGamePlayerResponse {
 
     private boolean focused;
 
+    private int playersCount;
+
 }
