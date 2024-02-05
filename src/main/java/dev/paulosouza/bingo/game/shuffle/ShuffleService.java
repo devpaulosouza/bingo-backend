@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -48,6 +49,8 @@ public class ShuffleService {
     private boolean isAcceptingNewPlayers = true;
 
     private boolean isStoppedByWinner = false;
+
+    private LocalDateTime startAt;
 
     private ScheduledExecutorService pingScheduler;
 
@@ -118,6 +121,7 @@ public class ShuffleService {
         this.shuffledWords = new String[request.getWords().length];
         this.winners.clear();
         this.isStoppedByWinner = false;
+        this.startAt = LocalDateTime.now().plusMinutes(request.getStartAtMinutes());
 
         this.players.forEach(p -> p.setFocused(true));
         this.players.forEach(p -> p.setWords(new String[request.getWords().length]));
@@ -192,6 +196,8 @@ public class ShuffleService {
                 .isGameRunning(this.isGameRunning)
                 .shuffledWords(this.shuffledWords)
                 .playersCount(this.players.size())
+                .startAt(this.startAt)
+                .isStarted(Objects.nonNull(this.startAt) && startAt.isBefore(LocalDateTime.now()))
                 .build();
     }
 
@@ -209,6 +215,8 @@ public class ShuffleService {
                 .isWinner(this.winners.stream().anyMatch(p -> p.getId().equals(playerId)))
                 .focused(player.isFocused())
                 .playersCount(this.players.size())
+                .startAt(this.startAt)
+                .isStarted(Objects.nonNull(this.startAt) && startAt.isBefore(LocalDateTime.now()))
                 .build();
     }
 

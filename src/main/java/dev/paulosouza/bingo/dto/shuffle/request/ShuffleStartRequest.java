@@ -11,4 +11,6 @@ public class ShuffleStartRequest {
 
     private int totalWinners;
 
+    private int startAtMinutes;
+
 }
