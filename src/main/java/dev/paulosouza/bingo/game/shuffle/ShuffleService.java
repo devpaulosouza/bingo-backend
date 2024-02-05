@@ -153,7 +153,7 @@ public class ShuffleService {
 
         player.setWords(request.getWords());
 
-        boolean isWinner = Stream.of(request.getWords()).map(String::toLowerCase).map(s -> s.replaceAll(" ", "")).toList().equals(Stream.of(this.words).map(String::toLowerCase).toList());
+        boolean isWinner = Stream.of(request.getWords()).map(String::toLowerCase).toList().equals(Stream.of(this.words).map(String::toLowerCase).toList());
 
         if (isWinner) {
             this.winners.add(player);
