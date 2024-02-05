@@ -145,15 +145,33 @@ public class ShuffleService {
         this.notifyService.notifyKickAll(SseUtils.mapShuffleEmitters(this.players, this.admins));
     }
 
-    public synchronized ShuffleGamePlayerResponse setWords(UUID playerId, ShuffleRequest request) {
-        if (!this.isGameRunning) {
-            throw new UnprocessableEntityException("Game is not running");
-        }
-
+    public synchronized ShuffleGamePlayerResponse setWords(UUID playerId, ShuffleRequest request, boolean finished) {
         ShufflePlayer player = this.players.stream()
                 .filter(p -> p.getId().equals(playerId))
                 .findFirst()
                 .orElseThrow(() -> new UnprocessableEntityException(PLAYER_WAS_NOT_FOUND));
+
+
+        boolean[] validWords = new boolean[request.getWords().length];
+
+        for (int i = 0; i < request.getWords().length; ++i) {
+            validWords[i] = request.getWords()[i].equalsIgnoreCase(this.words[i]);
+        }
+
+        if (finished) {
+            return ShuffleGamePlayerResponse.builder()
+                    .isGameRunning(this.isGameRunning)
+                    .winners(this.winners)
+                    .words(player.getWords())
+                    .validWords(validWords)
+                    .isWinner(this.winners.stream().anyMatch(p -> p.getId().equals(playerId)))
+                    .build();
+        }
+
+        if (!this.isGameRunning) {
+            throw new UnprocessableEntityException("Game is not running");
+        }
+
 
         if (!player.isFocused()) {
             throw new UnprocessableEntityException("Player lost the game because is unfocused");
@@ -171,12 +189,6 @@ public class ShuffleService {
         if (isWinner && this.totalWinners == this.winners.size()) {
             this.isGameRunning = false;
             this.isStoppedByWinner = true;
-        }
-
-        boolean[] validWords = new boolean[request.getWords().length];
-
-        for (int i = 0; i < request.getWords().length; ++i) {
-            validWords[i] = request.getWords()[i].equalsIgnoreCase(this.words[i]);
         }
 
         return ShuffleGamePlayerResponse.builder()

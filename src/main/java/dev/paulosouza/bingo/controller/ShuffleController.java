@@ -37,8 +37,8 @@ public class ShuffleController {
     }
 
     @PostMapping("/players/{playerId}/set-words")
-    public ResponseEntity<ShuffleGamePlayerResponse> setWords(@PathVariable("playerId") UUID playerId, @RequestBody ShuffleRequest player) {
-        ShuffleGamePlayerResponse response = this.service.setWords(playerId, player);
+    public ResponseEntity<ShuffleGamePlayerResponse> setWords(@PathVariable("playerId") UUID playerId, @RequestBody ShuffleRequest request, @RequestParam(value = "finished", required = false) boolean finished) {
+        ShuffleGamePlayerResponse response = this.service.setWords(playerId, request, finished);
 
         return ResponseEntity.ok(response);
     }
