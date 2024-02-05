@@ -155,7 +155,25 @@ public class ShuffleService {
         boolean[] validWords = new boolean[request.getWords().length];
 
         for (int i = 0; i < request.getWords().length; ++i) {
-            validWords[i] = request.getWords()[i].equalsIgnoreCase(this.words[i]);
+            validWords[i] = request.getWords()[i]
+                    .toUpperCase()
+                    .replace("Ã", "A")
+                    .replace("Á", "A")
+                    .replace("Â", "A")
+                    .replace("Ê", "E")
+                    .replace("É", "E")
+                    .replace("Ẽ", "E")
+                    .replace("Í", "I")
+                    .replace("Ĩ", "I")
+                    .replace("Î", "I")
+                    .replace("Õ", "O")
+                    .replace("Ó", "O")
+                    .replace("Ô", "O")
+                    .replace("Ú", "U")
+                    .replace("Û", "U")
+                    .replace("Ũ", "U")
+                    .replace("Ç", "C")
+                    .equalsIgnoreCase(this.words[i]);
         }
 
         if (finished) {
