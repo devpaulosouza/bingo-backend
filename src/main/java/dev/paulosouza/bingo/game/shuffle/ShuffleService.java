@@ -80,6 +80,10 @@ public class ShuffleService {
     }
 
     public void setUnfocused(UUID playerId) {
+        if (!this.isGameRunning) {
+            return;
+        }
+
         ShufflePlayer player = this.players.stream()
                 .filter(p -> p.getId().equals(playerId))
                 .findFirst()
@@ -165,10 +169,17 @@ public class ShuffleService {
             this.isStoppedByWinner = true;
         }
 
+        boolean[] validWords = new boolean[request.getWords().length];
+
+        for (int i = 0; i < request.getWords().length; ++i) {
+            validWords[i] = request.getWords()[i].equalsIgnoreCase(this.words[i]);
+        }
+
         return ShuffleGamePlayerResponse.builder()
                 .isGameRunning(this.isGameRunning)
                 .winners(this.winners)
                 .words(player.getWords())
+                .validWords(validWords)
                 .isWinner(this.winners.stream().anyMatch(p -> p.getId().equals(playerId)))
                 .build();
     }

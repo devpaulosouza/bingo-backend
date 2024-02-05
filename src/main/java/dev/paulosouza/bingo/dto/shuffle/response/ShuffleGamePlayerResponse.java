@@ -18,6 +18,8 @@ public class ShuffleGamePlayerResponse {
 
     private String[] shuffledWords;
 
+    private boolean[] validWords;
+
     private List<ShufflePlayer> winners;
 
     private boolean isGameRunning;
