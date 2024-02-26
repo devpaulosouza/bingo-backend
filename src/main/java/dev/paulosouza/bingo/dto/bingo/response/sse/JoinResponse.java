@@ -10,9 +10,12 @@ public class JoinResponse extends SseEventResponse {
 
     private BingoCard card;
 
-    public JoinResponse(BingoCard card) {
+    private int playersCount;
+
+    public JoinResponse(BingoCard card, int playersCount) {
         super(SseEventType.JOIN);
         this.card = card;
+        this.playersCount = playersCount;
     }
 
 }

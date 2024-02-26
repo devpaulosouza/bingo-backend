@@ -48,8 +48,8 @@ public class NotifyService {
         SseUtils.broadcast(emitters, markedResponse);
     }
 
-    public void notifyJoin(List<SseEmitter> emitters, BingoCard card) {
-        SseUtils.broadcast(emitters, new JoinResponse(card));
+    public void notifyJoin(List<SseEmitter> emitters, BingoCard card, int playersCount) {
+        SseUtils.broadcast(emitters, new JoinResponse(card, playersCount));
     }
 
     public void notifyGameMode(List<SseEmitter> emitters, BingoMode mode) {

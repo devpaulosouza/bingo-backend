@@ -77,7 +77,7 @@ public class ShuffleService {
                 .build();
 
         this.players.add(card);
-        this.notifyService.notifyJoin(SseUtils.mapShuffleEmitters(this.players, this.admins), null);
+        this.notifyService.notifyJoin(SseUtils.mapShuffleEmitters(this.players, this.admins), null, this.players.size());
 
         return this.getGame(request.getId());
     }

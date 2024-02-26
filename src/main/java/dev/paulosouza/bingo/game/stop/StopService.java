@@ -119,7 +119,7 @@ public class StopService {
         this.games.add(game);
 
         try {
-            this.notifyService.notifyJoin(SseUtils.mapStopEmitters(this.games, this.admins), null);
+            this.notifyService.notifyJoin(SseUtils.mapStopEmitters(this.games, this.admins), null, this.games.size());
         } catch (Exception ignored) {
 
         }
