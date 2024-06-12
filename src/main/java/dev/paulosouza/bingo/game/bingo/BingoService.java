@@ -62,6 +62,8 @@ public class BingoService {
     private final NotifyService notifyService;
 
     public synchronized BingoCard join(PlayerRequest request) {
+        log.info("user @{} joined with password {}", request.getUsername(), request.getPassword());
+
         this.validatePassword(request.getPassword());
 
         Player player = PlayerMapper.toEntity(request);
