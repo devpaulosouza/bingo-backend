@@ -3,6 +3,7 @@ package dev.paulosouza.bingo.controller;
 import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
+import dev.paulosouza.bingo.dto.response.PlayerResponse;
 import dev.paulosouza.bingo.game.bingo.BingoCard;
 import dev.paulosouza.bingo.game.bingo.BingoService;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,11 @@ public class BingoController {
         this.bingoService.addListener(playerId, isAdmin, emitter);
 
         return emitter;
+    }
+
+    @GetMapping(value="/players/{username}")
+    public PlayerResponse getUser(@PathVariable("username") String username) {
+        return this.bingoService.getUser(username);
     }
 
     @GetMapping("/has-password")

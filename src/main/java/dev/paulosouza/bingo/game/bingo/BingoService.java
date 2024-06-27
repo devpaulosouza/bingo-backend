@@ -6,6 +6,7 @@ import dev.paulosouza.bingo.dto.bingo.request.MarkRequest;
 import dev.paulosouza.bingo.dto.bingo.request.PlayerRequest;
 import dev.paulosouza.bingo.dto.bingo.response.*;
 import dev.paulosouza.bingo.dto.bingo.response.sse.*;
+import dev.paulosouza.bingo.dto.response.PlayerResponse;
 import dev.paulosouza.bingo.exception.UnprocessableEntityException;
 import dev.paulosouza.bingo.game.Player;
 import dev.paulosouza.bingo.mapper.PlayerMapper;
@@ -15,6 +16,7 @@ import dev.paulosouza.bingo.utils.ListUtils;
 import dev.paulosouza.bingo.utils.SseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -247,6 +249,20 @@ public class BingoService {
         this.startPing();
     }
 
+    public PlayerResponse getUser(String username) {
+        Player player = this.cards.stream()
+                .filter(card -> card.getPlayer().getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new UnprocessableEntityException("Player was not found"))
+                .getPlayer();
+
+        PlayerResponse response = new PlayerResponse();
+
+        BeanUtils.copyProperties(player, response);
+
+        return response;
+    }
+
     public void setConfig(BingoConfigRequest request) {
         if (request.getAllowList() != null) {
             this.setAllowList(request.getAllowList());
@@ -265,6 +281,7 @@ public class BingoService {
             this.admins.remove(emitter);
         }
     }
+
     private void setAllowList(List<String> usernames) {
         this.allowList.clear();
         this.allowList.addAll(usernames);
